@@ -10,12 +10,7 @@ unified_makefile_project1/.idea/unified_makefile_project1.iml
 
 
 ## object files
-**/obj
 *.o
 
 ## snapshots
-**/snapshots
-
-
-## gitkeep
-!*.gitkeep
+*.png
