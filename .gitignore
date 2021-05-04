@@ -18,4 +18,4 @@ unified_makefile_project1/.idea/unified_makefile_project1.iml
 
 
 ## gitkeep
-*!.gitkeep
+!*.gitkeep
