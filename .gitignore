@@ -1,3 +1,5 @@
+
+
 ## executable
 unified_makefile_project1/bin/project1.exe
 
@@ -15,3 +17,5 @@ unified_makefile_project1/.idea/unified_makefile_project1.iml
 **/snapshots
 
 
+## gitkeep
+*!.gitkeep
