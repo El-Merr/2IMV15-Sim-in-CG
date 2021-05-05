@@ -24,9 +24,10 @@ Vec2f Particle::getState()
     return NULL; //Vec2f(m_Position, m_Velocity);
 }
 
-Vec2f Particle::setState()
+Vec2f Particle::setState(Vec2f pos, Vec2f vel)
 {
-    return NULL; //Vec2f(m_Position, m_Velocity);
+    m_Position = pos;
+    m_Velocity = vel;
 }
 
 Vec2f Particle::deriveEval() { // returns a vector of the velocity and the acceleration
