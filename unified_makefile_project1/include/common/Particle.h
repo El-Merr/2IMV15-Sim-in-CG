@@ -12,7 +12,7 @@ public:
 	void reset();
 	void draw();
 	Vec2f getState();
-	Vec2f setState();
+	Vec2f setState(Vec2f pos, Vec2f vel);
 	Vec2f deriveEval();
 
 	Vec2f m_ConstructPos;
