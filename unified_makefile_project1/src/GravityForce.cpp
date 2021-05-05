@@ -6,11 +6,12 @@
 #include <GL/glut.h>
 
 float G = 9.8;
+float gravity = 0;
 
 GravityForce::GravityForce(Particle *p) : m_p(p) {
     //m_p->f += m_p->m_Mass * F->G;
-    auto gravity = m_p->m_Mass * G;
-    m_p->Force = gravity;
+    gravity = m_p->m_Mass * G;
+    m_p->m_Force += gravity;
 }
 
 void GravityForce::draw()

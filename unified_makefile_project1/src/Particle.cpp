@@ -21,16 +21,16 @@ void Particle::reset()
 
 Vec2f Particle::getState()
 {
-    return Vec2f(m_Position, m_Velocity);
+    return NULL; //Vec2f(m_Position, m_Velocity);
 }
 
 Vec2f Particle::setState()
 {
-    return Vec2f(m_Position, m_Velocity);
+    return NULL; //Vec2f(m_Position, m_Velocity);
 }
 
 Vec2f Particle::deriveEval() { // returns a vector of the velocity and the acceleration
-    return Vec2f(m_Velocity, m_Force / m_Mass);
+    return NULL; //Vec2f(m_Velocity, m_Force / m_Mass);
 }
 
 void Particle::draw()

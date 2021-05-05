@@ -40,6 +40,7 @@ static int hmx, hmy;
 static SpringForce * delete_this_dummy_spring = NULL;
 static RodConstraint * delete_this_dummy_rod = NULL;
 static CircularWireConstraint * delete_this_dummy_wire = NULL;
+static GravityForce * gravityForce = NULL;
 
 
 /*
