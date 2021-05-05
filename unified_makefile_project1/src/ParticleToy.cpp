@@ -152,6 +152,8 @@ static void draw_forces ( void )
 	// change this to iteration over full set
 	if (delete_this_dummy_spring)
 		delete_this_dummy_spring->draw();
+	if (gravityForce)
+	    gravityForce->draw();
 }
 
 static void draw_constraints ( void )
