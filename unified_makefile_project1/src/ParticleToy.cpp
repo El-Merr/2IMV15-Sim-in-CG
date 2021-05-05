@@ -5,6 +5,7 @@
 #include "SpringForce.h"
 #include "RodConstraint.h"
 #include "CircularWireConstraint.h"
+#include "GravityForce.h"
 #include "imageio.h"
 
 #include <vector>
@@ -91,6 +92,7 @@ static void init_system(void)
 	delete_this_dummy_spring = new SpringForce(pVector[0], pVector[1], dist, 1.0, 1.0);
 	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
 	delete_this_dummy_wire = new CircularWireConstraint(pVector[0], center, dist);
+	gravityForce = new GravityForce(pVector[0]);
 }
 
 /*

@@ -10,7 +10,7 @@ class GravityForce {
     private:
 
         Particle * const m_p;   // particle
-        double G; qq// gravitation constant (9.8)
+        double G; // gravitation constant (9.8)
 };
 
 
