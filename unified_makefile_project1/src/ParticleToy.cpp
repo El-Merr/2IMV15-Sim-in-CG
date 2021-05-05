@@ -64,6 +64,10 @@ static void free_data ( void )
 		delete delete_this_dummy_wire;
 		delete_this_dummy_wire = NULL;
 	}
+    if (gravityForce) {
+        delete gravityForce;
+        gravityForce = NULL;
+    }
 }
 
 static void clear_data ( void )

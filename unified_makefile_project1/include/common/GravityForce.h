@@ -1,6 +1,8 @@
 #pragma once
 #include "Particle.h"
 
+#define G 9.8
+
 class GravityForce {
 
     public:
@@ -10,7 +12,7 @@ class GravityForce {
     private:
 
         Particle * const m_p;   // particle
-        double G; // gravitation constant (9.8)
+        float m_gravity;
 };
 
 
