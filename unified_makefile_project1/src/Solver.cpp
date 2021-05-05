@@ -6,7 +6,7 @@
 #define RAND (((rand()%2000)/1000.f)-1.f)
 void simulation_step( std::vector<Particle*> pVector, float dt )
 {
-    size = pVector.size();
+    int size = pVector.size();
 	
 	for(int ii=0; ii<size; ii++)
 	{
