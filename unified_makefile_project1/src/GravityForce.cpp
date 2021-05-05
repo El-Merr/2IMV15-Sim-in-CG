@@ -5,10 +5,9 @@
 #include "GravityForce.h"
 #include <GL/glut.h>
 
-GravityForce::GravityForce(Particle *p) : m_p(p), m_gravity(G) {
-    //m_p->f += m_p->m_Mass * F->G;
-    m_gravity = m_p->m_Mass * G;
-    m_p->m_Force += m_gravity;
+GravityForce::GravityForce(Particle *p) : m_p(p), m_Gravity(G) {
+    m_Gravity = m_p->m_Mass * G;
+    m_p->m_Force += m_Gravity;
 }
 
 void GravityForce::draw()
@@ -20,21 +19,21 @@ void GravityForce::draw()
     glColor3f(1.0, 0.0, 0.0);   // red
     glVertex2f( m_p->m_Position[0], m_p->m_Position[1] );
     glColor3f(1.0, 0.0, 0.0);
-    glVertex2f( m_p->m_Position[0], m_p->m_Position[1] - m_gravity*scale );
+    glVertex2f( m_p->m_Position[0], m_p->m_Position[1] - m_Gravity*scale );
     glEnd();
 
     // arrowhead right
     glBegin( GL_LINES );
     glColor3f(1.0, 0.0, 0.0);
-    glVertex2f( m_p->m_Position[0], m_p->m_Position[1] - m_gravity*scale );
+    glVertex2f( m_p->m_Position[0], m_p->m_Position[1] - m_Gravity*scale );
     glColor3f(1.0, 0.0, 0.0);
-    glVertex2f( m_p->m_Position[0] + arrow_dist, m_p->m_Position[1] - m_gravity*scale + arrow_dist );
+    glVertex2f( m_p->m_Position[0] + arrow_dist, m_p->m_Position[1] - m_Gravity*scale + arrow_dist );
     glEnd();
     // arrowhead left
     glBegin( GL_LINES );
     glColor3f(1.0, 0.0, 0.0);
-    glVertex2f( m_p->m_Position[0], m_p->m_Position[1] - m_gravity*scale );
+    glVertex2f( m_p->m_Position[0], m_p->m_Position[1] - m_Gravity*scale );
     glColor3f(1.0, 0.0, 0.0);
-    glVertex2f( m_p->m_Position[0] - arrow_dist, m_p->m_Position[1] - m_gravity*scale + arrow_dist );
+    glVertex2f( m_p->m_Position[0] - arrow_dist, m_p->m_Position[1] - m_Gravity*scale + arrow_dist );
     glEnd();
 }

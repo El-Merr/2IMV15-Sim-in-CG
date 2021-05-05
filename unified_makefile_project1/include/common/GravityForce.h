@@ -12,7 +12,7 @@ class GravityForce {
     private:
 
         Particle * const m_p;   // particle
-        float m_gravity;
+        float m_Gravity;
 };
 
 
