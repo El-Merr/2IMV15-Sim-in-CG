@@ -11,6 +11,9 @@ public:
 
 	void reset();
 	void draw();
+	Vec2f getState();
+	Vec2f setState();
+	Vec2f deriveEval();
 
 	Vec2f m_ConstructPos;
 	Vec2f m_Position;

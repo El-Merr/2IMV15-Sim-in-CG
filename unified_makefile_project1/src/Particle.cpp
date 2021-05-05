@@ -18,6 +18,21 @@ void Particle::reset()
 	m_ForceAccumulator = Vec2f(0.0, 0.0);
 	m_Mass = 1;
 }
+
+Vec2f Particle::getState()
+{
+    return Vec2f(m_Position, m_Velocity);
+}
+
+Vec2f Particle::setState()
+{
+    return Vec2f(m_Position, m_Velocity);
+}
+
+Vec2f Particle::deriveEval() { // returns a vector of the velocity and the acceleration
+    return Vec2f(m_Velocity, m_Force / m_Mass);
+}
+
 void Particle::draw()
 {
 	const double h = 0.03;
