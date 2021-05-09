@@ -16,8 +16,7 @@
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> pVector, float dt );
-
+extern void simulation_step( std::vector<Particle*> pVector, float dt);
 /* global variables */
 
 static int N;
@@ -148,6 +147,7 @@ static void draw_particles ( void )
 
 	for(int ii=0; ii< size; ii++)
 	{
+        pVector[ii]->computeVelocity();
 		pVector[ii]->draw();
 	}
 }

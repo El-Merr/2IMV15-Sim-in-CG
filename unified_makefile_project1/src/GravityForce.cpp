@@ -7,12 +7,12 @@
 
 GravityForce::GravityForce(Particle *p) : m_p(p), m_Gravity(G) {
     m_Gravity = m_p->m_Mass * G;
-    m_p->m_Force += m_Gravity;
+    m_p->m_Force[1] -= m_Gravity;
 }
 
 void GravityForce::draw()
 {
-    const double scale = 0.02;
+    const double scale = 1;
     const double arrow_dist = 0.03;
 
     glBegin( GL_LINES );
