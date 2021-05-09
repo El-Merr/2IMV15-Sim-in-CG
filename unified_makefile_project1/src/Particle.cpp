@@ -40,8 +40,7 @@ std::vector<Vec2f> Particle::deriveEval() { // returns a vector of the velocity 
 
 void Particle::computeVelocity() {
     std::vector<Vec2f> eval = deriveEval();
-    m_Velocity = eval[1];//*0.00001;
-
+    m_Velocity += eval[1];
 }
 
 void Particle::draw()
