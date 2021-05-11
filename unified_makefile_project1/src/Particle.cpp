@@ -20,6 +20,11 @@ void Particle::reset()
 	m_Mass = 0.01;
 }
 
+void Particle::clearForce()
+{
+    m_Force = Vec2f(0.0, 0.0);
+}
+
 Vec2f Particle::getState()
 {
     return NULL; //Vec2f(m_Position, m_Velocity);

@@ -11,6 +11,7 @@ public:
 	virtual ~Particle(void);
 
 	void reset();
+	void clearForce();
 	void draw();
 	Vec2f getState();
 	void setState(Vec2f pos, Vec2f vel);
