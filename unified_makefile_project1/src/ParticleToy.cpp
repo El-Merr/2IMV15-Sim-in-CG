@@ -78,6 +78,15 @@ static void clear_data ( void )
 	}
 }
 
+static void clear_forces ( void )
+{
+    int ii, size = pVector.size();
+
+    for(ii=0; ii<size; ii++){
+        pVector[ii]->clearForce();
+    }
+}
+
 static void init_system(void)
 {
 	const double dist = 0.2;
@@ -96,12 +105,8 @@ static void init_system(void)
 	delete_this_dummy_spring = new SpringForce(pVector[0], pVector[1], dist, 1.0, 1.0);
 	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
 	delete_this_dummy_wire = new CircularWireConstraint(pVector[0], center, dist);
+    gravityForce = new GravityForce(pVector);
 
-    int size = pVector.size();
-    for(int ii=0; ii < size; ii++)
-    {
-        gravityForce = new GravityForce(pVector[ii]);
-    }
 }
 
 /*
@@ -163,6 +168,12 @@ static void draw_forces ( void )
 		delete_this_dummy_spring->draw();
 	if (gravityForce)
 	    gravityForce->draw();
+}
+
+static void apply_forces ( void )
+{
+    if (gravityForce)
+        gravityForce->applyGravity();
 }
 
 static void draw_constraints ( void )
@@ -281,6 +292,9 @@ static void reshape_func ( int width, int height )
 
 static void idle_func ( void )
 {
+    clear_forces();
+    apply_forces();
+
 	if ( dsim ) simulation_step( pVector, dt );
 	else        {get_from_UI();remap_GUI();}
 
