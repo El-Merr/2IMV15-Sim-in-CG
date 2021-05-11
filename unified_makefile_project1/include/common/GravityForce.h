@@ -1,7 +1,7 @@
 #pragma once
 #include "Particle.h"
 
-#define G 0.00001f
+#define G 1.0f
 
 class GravityForce {
 

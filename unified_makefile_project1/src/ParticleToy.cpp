@@ -147,7 +147,6 @@ static void draw_particles ( void )
 
 	for(int ii=0; ii< size; ii++)
 	{
-        pVector[ii]->computeVelocity();
 		pVector[ii]->draw();
 	}
 }
@@ -363,8 +362,8 @@ int main ( int argc, char ** argv )
 	
 	init_system();
 	
-	win_x = 512;
-	win_y = 512;
+	win_x = 800;
+	win_y = 800;
 	open_glut_window ();
 
 	glutMainLoop ();
