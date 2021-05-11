@@ -29,9 +29,8 @@ void GravityForce::applyGravity()
 
 void GravityForce::draw_arrow(Particle* p, float g)
 {
-    const float scale = 1/G;
+    const float scale = 30/G;
     const double arrow_dist = 0.03;
-    printf("scale: %f\n", scale);
 
     glBegin( GL_LINES );
     glColor3f(1.0, 0.0, 0.0);   // red
