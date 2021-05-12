@@ -1,18 +1,21 @@
 #pragma once
 #include "Particle.h"
 
-#define G 0.00001f
+#define G 0.0001f
 
 class GravityForce {
 
     public:
-        GravityForce(Particle *p);
+        GravityForce(std::vector<Particle*> pVector);
         void draw();
+        void applyGravity();
 
     private:
 
-        Particle * const m_p;   // particle
-        float m_Gravity;
+        std::vector<Particle*> const m_pVec;   // particle
+//        std::vector<float> m_Gravity;
+
+        void draw_arrow(Particle *p, float g);
 };
 
 
