@@ -8,7 +8,7 @@ class GravityForce {
     public:
         GravityForce(std::vector<Particle*> pVector);
         void draw();
-        void applyGravity();
+        void apply_gravity();
 
     private:
 

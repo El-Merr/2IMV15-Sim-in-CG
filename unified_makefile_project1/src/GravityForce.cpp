@@ -17,7 +17,7 @@ GravityForce::GravityForce(std::vector<Particle*> pVector) : m_pVec(pVector) {
 
 }
 
-void GravityForce::applyGravity()
+void GravityForce::apply_gravity()
 {
     int size = m_pVec.size();
     for(int ii=0; ii < size; ii++)

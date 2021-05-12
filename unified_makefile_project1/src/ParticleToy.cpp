@@ -151,6 +151,18 @@ static void post_display ( void )
 	glutSwapBuffers ();
 }
 
+static void apply_forces ( void )
+{
+    if (gravityForce)
+        gravityForce->apply_gravity();
+}
+
+static void apply_constraints ( void )
+{
+    if (delete_this_dummy_wire)
+        delete_this_dummy_wire->apply_constraint();
+}
+
 static void draw_particles ( void )
 {
 	int size = pVector.size();
@@ -170,11 +182,7 @@ static void draw_forces ( void )
 	    gravityForce->draw();
 }
 
-static void apply_forces ( void )
-{
-    if (gravityForce)
-        gravityForce->applyGravity();
-}
+
 
 static void draw_constraints ( void )
 {
@@ -294,6 +302,7 @@ static void idle_func ( void )
 {
     clear_forces();
     apply_forces();
+    apply_constraints();
 
 	if ( dsim ) simulation_step( pVector, dt );
 	else        {get_from_UI();remap_GUI();}
