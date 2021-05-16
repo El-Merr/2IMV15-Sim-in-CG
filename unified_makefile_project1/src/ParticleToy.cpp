@@ -5,6 +5,7 @@
 #include "SpringForce.h"
 #include "RodConstraint.h"
 #include "CircularWireConstraint.h"
+#include "GravityForce.h"
 #include "imageio.h"
 
 #include <vector>
@@ -15,8 +16,7 @@
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> pVector, float dt );
-
+extern void simulation_step( std::vector<Particle*> pVector, float dt);
 /* global variables */
 
 static int N;
@@ -39,6 +39,7 @@ static int hmx, hmy;
 static SpringForce * delete_this_dummy_spring = NULL;
 static RodConstraint * delete_this_dummy_rod = NULL;
 static CircularWireConstraint * delete_this_dummy_wire = NULL;
+static GravityForce * gravityForce = NULL;
 
 
 /*
@@ -62,6 +63,10 @@ static void free_data ( void )
 		delete delete_this_dummy_wire;
 		delete_this_dummy_wire = NULL;
 	}
+    if (gravityForce) {
+        delete gravityForce;
+        gravityForce = NULL;
+    }
 }
 
 static void clear_data ( void )
@@ -71,6 +76,15 @@ static void clear_data ( void )
 	for(ii=0; ii<size; ii++){
 		pVector[ii]->reset();
 	}
+}
+
+static void clear_forces ( void )
+{
+    int ii, size = pVector.size();
+
+    for(ii=0; ii<size; ii++){
+        pVector[ii]->clearForce();
+    }
 }
 
 static void init_system(void)
@@ -86,11 +100,13 @@ static void init_system(void)
 	pVector.push_back(new Particle(center + offset + offset));
 	pVector.push_back(new Particle(center + offset + offset + offset));
 	
-	// You shoud replace these with a vector generalized forces and one of
+	// You should replace these with a vector generalized forces and one of
 	// constraints...
 	delete_this_dummy_spring = new SpringForce(pVector[0], pVector[1], dist, 1.0, 1.0);
 	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
 	delete_this_dummy_wire = new CircularWireConstraint(pVector[0], center, dist);
+    gravityForce = new GravityForce(pVector);
+
 }
 
 /*
@@ -150,6 +166,14 @@ static void draw_forces ( void )
 	// change this to iteration over full set
 	if (delete_this_dummy_spring)
 		delete_this_dummy_spring->draw();
+	if (gravityForce)
+	    gravityForce->draw();
+}
+
+static void apply_forces ( void )
+{
+    if (gravityForce)
+        gravityForce->applyGravity();
 }
 
 static void draw_constraints ( void )
@@ -268,6 +292,9 @@ static void reshape_func ( int width, int height )
 
 static void idle_func ( void )
 {
+    clear_forces();
+    apply_forces();
+
 	if ( dsim ) simulation_step( pVector, dt );
 	else        {get_from_UI();remap_GUI();}
 
@@ -354,8 +381,8 @@ int main ( int argc, char ** argv )
 	
 	init_system();
 	
-	win_x = 512;
-	win_y = 512;
+	win_x = 800;
+	win_y = 800;
 	open_glut_window ();
 
 	glutMainLoop ();
