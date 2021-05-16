@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Particle.h"
+#include <gfx/mat2.h>
 
 class CircularWireConstraint {
  public:
@@ -8,6 +9,7 @@ class CircularWireConstraint {
 
   void draw();
   void apply_constraint();
+  Mat2 MatVec_tMult(Mat2 m, Vec2 v);
 
  private:
 

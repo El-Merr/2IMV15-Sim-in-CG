@@ -112,6 +112,7 @@ inline Mat2 operator-(const Mat2 &m)
 
 inline Mat2 operator*(double s, const Mat2 &m)
 	{ return Mat2(m[0]*s, m[1]*s); }
+
 inline Mat2 operator*(const Mat2 &m, double s)
 	{ return s*m; }
 
