@@ -36,7 +36,7 @@ static int mouse_shiftclick[3];
 static int omx, omy, mx, my;
 static int hmx, hmy;
 
-static SpringForce * delete_this_dummy_spring = NULL;
+static SpringForce * springForce = NULL;
 static RodConstraint * delete_this_dummy_rod = NULL;
 static CircularWireConstraint * delete_this_dummy_wire = NULL;
 static GravityForce * gravityForce = NULL;
@@ -55,9 +55,9 @@ static void free_data ( void )
 		delete delete_this_dummy_rod;
 		delete_this_dummy_rod = NULL;
 	}
-	if (delete_this_dummy_spring) {
-		delete delete_this_dummy_spring;
-		delete_this_dummy_spring = NULL;
+	if (springForce) {
+		delete springForce;
+		springForce = NULL;
 	}
 	if (delete_this_dummy_wire) {
 		delete delete_this_dummy_wire;
@@ -102,7 +102,7 @@ static void init_system(void)
 	
 	// You should replace these with a vector generalized forces and one of
 	// constraints...
-	delete_this_dummy_spring = new SpringForce(pVector[0], pVector[1], dist, 1.0, 1.0);
+	springForce = new SpringForce(pVector[0], pVector[1], dist, 9.0, 0.4);
 	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
 	delete_this_dummy_wire = new CircularWireConstraint(pVector[0], center, dist);
     gravityForce = new GravityForce(pVector);
@@ -164,14 +164,16 @@ static void draw_particles ( void )
 static void draw_forces ( void )
 {
 	// change this to iteration over full set
-	if (delete_this_dummy_spring)
-		delete_this_dummy_spring->draw();
+	if (springForce)
+		springForce->draw();
 	if (gravityForce)
 	    gravityForce->draw();
 }
 
 static void apply_forces ( void )
 {
+    if (springForce)
+        springForce->applyForce();
     if (gravityForce)
         gravityForce->applyGravity();
 }
