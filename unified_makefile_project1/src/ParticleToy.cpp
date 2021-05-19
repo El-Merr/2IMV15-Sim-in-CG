@@ -148,12 +148,6 @@ static void post_display ( void )
 	glutSwapBuffers ();
 }
 
-static void apply_forces ( void )
-{
-    if (gravityForce)
-        gravityForce->apply_gravity();
-}
-
 static void apply_constraints ( void )
 {
 //    if (delete_this_dummy_wire)
@@ -189,7 +183,7 @@ static void apply_forces ( void )
     }
 
     if (gravityForce)
-        gravityForce->applyGravity();
+        gravityForce->apply_gravity();
 }
 
 static void draw_constraints ( void )
