@@ -5,7 +5,7 @@
 #include "ConstraintSolver.h"
 
 ConstraintSolver::ConstraintSolver(std::vector<Particle*> pVector, std::vector<Constraint*> cVector ):
-        m_pVec(pVector), m_cVec(cVector)
+        m_pVector(pVector), m_cVector(cVector)
 {
 }
 

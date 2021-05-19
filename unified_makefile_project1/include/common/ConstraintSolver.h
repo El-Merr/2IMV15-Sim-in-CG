@@ -20,8 +20,8 @@ public:
     void apply_constraint();
 
 private:
-    std::vector<Particle*> m_pVec;
-    std::vector<Constraint*> m_cVec;
+    std::vector<Particle*> m_pVector;
+    std::vector<Constraint*> m_cVector;
 
 };
 
