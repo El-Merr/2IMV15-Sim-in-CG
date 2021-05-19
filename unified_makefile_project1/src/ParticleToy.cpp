@@ -36,7 +36,7 @@ static int mouse_shiftclick[3];
 static int omx, omy, mx, my;
 static int hmx, hmy;
 
-static SpringForce * delete_this_dummy_spring = NULL;
+static std::vector<SpringForce*> springForce;
 static RodConstraint * delete_this_dummy_rod = NULL;
 static CircularWireConstraint * delete_this_dummy_wire = NULL;
 static GravityForce * gravityForce = NULL;
@@ -55,10 +55,7 @@ static void free_data ( void )
 		delete delete_this_dummy_rod;
 		delete_this_dummy_rod = NULL;
 	}
-	if (delete_this_dummy_spring) {
-		delete delete_this_dummy_spring;
-		delete_this_dummy_spring = NULL;
-	}
+    springForce.clear();
 	if (delete_this_dummy_wire) {
 		delete delete_this_dummy_wire;
 		delete_this_dummy_wire = NULL;
@@ -95,14 +92,14 @@ static void init_system(void)
 
 	// Create three particles, attach them to each other, then add a
 	// circular wire constraint to the first.
-
 	pVector.push_back(new Particle(center + offset));
 	pVector.push_back(new Particle(center + offset + offset));
 	pVector.push_back(new Particle(center + offset + offset + offset));
 	
 	// You should replace these with a vector generalized forces and one of
 	// constraints...
-	delete_this_dummy_spring = new SpringForce(pVector[0], pVector[1], dist, 1.0, 1.0);
+	springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, 0.001, 0.00001));
+//    springForce.push_back(new SpringForce(pVector[1], pVector[2], dist, 0.1, 0.01));
 	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
 	delete_this_dummy_wire = new CircularWireConstraint(pVector[0], center, dist);
     gravityForce = new GravityForce(pVector);
@@ -164,14 +161,21 @@ static void draw_particles ( void )
 static void draw_forces ( void )
 {
 	// change this to iteration over full set
-	if (delete_this_dummy_spring)
-		delete_this_dummy_spring->draw();
+    for(int spring=0; spring<springForce.size(); spring++)
+    {
+        springForce[spring]->draw();
+    }
 	if (gravityForce)
 	    gravityForce->draw();
 }
 
 static void apply_forces ( void )
 {
+    for(int spring=0; spring<springForce.size(); spring++)
+    {
+        springForce[spring]->applySpring();
+    }
+
     if (gravityForce)
         gravityForce->applyGravity();
 }
