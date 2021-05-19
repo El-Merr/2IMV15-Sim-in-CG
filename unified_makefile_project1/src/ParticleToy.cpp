@@ -159,8 +159,8 @@ static void apply_forces ( void )
 
 static void apply_constraints ( void )
 {
-    if (delete_this_dummy_wire)
-        delete_this_dummy_wire->apply_constraint();
+//    if (delete_this_dummy_wire)
+//        delete_this_dummy_wire->apply_constraint();
 }
 
 static void draw_particles ( void )

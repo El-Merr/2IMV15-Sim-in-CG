@@ -23,7 +23,6 @@ static void draw_circle(const Vec2f & vect, float radius)
 
 CircularWireConstraint::CircularWireConstraint(Particle* p, const Vec2f & center, const double radius) :
 	m_p(p), m_center(center), m_radius(radius) {
-
 }
 
 void CircularWireConstraint::draw()
@@ -43,13 +42,19 @@ float CircularWireConstraint::constraint_derivative()
     return 2 * pos_diff * m_p->m_Velocity;
 }
 
-vector<Vec2f> CircularWireConstraint::J()
+std::vector<Vec2f> CircularWireConstraint::J()
 {
     Vec2f pos_diff = m_p->m_Position - m_center;
-    return vector<Vec2f>(pos_diff * 2);
+    Vec2f j = pos_diff * 2;
+    std::vector<Vec2f> res;
+    res.push_back(j);
+    return res; //std::vector<Vec2f>(j);
 }
 
-vector<Vec2f> CircularWireConstraint::J_derivative()
+std::vector<Vec2f> CircularWireConstraint::J_derivative()
 {
-    return vector<Vec2f>(m_p->m_Velocity * 2);
+    Vec2f j_deriv = m_p->m_Velocity * 2;
+    std::vector<Vec2f> res;
+    res.push_back(j_deriv);
+    return res; //std::vector<Vec2f>(j_deriv);
 }

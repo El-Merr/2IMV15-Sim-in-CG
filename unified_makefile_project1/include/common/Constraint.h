@@ -5,18 +5,22 @@
 #ifndef UNIFIED_MAKEFILE_PROJECT1_CONSTRAINT_H
 #define UNIFIED_MAKEFILE_PROJECT1_CONSTRAINT_H
 
-#include "vector"
+#include <vector>
+#include "gfx/vec2.h"
+#include "Particle.h"
 
 class Constraint {
 protected:
-    vector<Particle*> particles;
+//    std::vector<Particle*> pVector;
 
 public:
+//    Constraint(std::vector<Particle*> pVector): pVector(pVector) {};
+
     virtual void draw();
     virtual float constraint();
     virtual float constraint_derivative();
-    virtual Vec2f J();
-    virtual Vec2f J_derivative();
+    virtual std::vector<Vec2f> J();
+    virtual std::vector<Vec2f> J_derivative();
 
 };
 

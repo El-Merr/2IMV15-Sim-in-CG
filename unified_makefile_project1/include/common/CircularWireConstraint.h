@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Particle.h"
-#include "gfx/mat2.h"
+#include "gfx/vec2.h"
 #include <Eigen/Dense>
 #include "Eigen/IterativeLinearSolvers"
 #include "Constraint.h"
+
+#include <vector>
 
 using namespace Eigen;
 
@@ -17,8 +19,8 @@ class CircularWireConstraint : public Constraint {
 
     float constraint() override;
     float constraint_derivative() override;
-    vector<Vec2f> J() override;
-    vector<Vec2f> J_derivative() override;
+    std::vector<Vec2f> J() override;
+    std::vector<Vec2f> J_derivative() override;
 
 
  private:

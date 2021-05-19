@@ -3,17 +3,17 @@
 //
 
 #include "ConstraintSolver.h"
-#include "CircularWireConstraint.h"
 
-ConstraintSolver::ConstraintSolver(std::vector<Particle*> pVector) : m_pVec(pVector)
+ConstraintSolver::ConstraintSolver(std::vector<Particle*> pVector, std::vector<Constraint*> cVector ):
+        m_pVec(pVector), m_cVec(cVector)
 {
 }
 
-void CircularWireConstraint::apply_constraint()
-//{
-//    const int dimensions = 2;
-//    //int vectorLength = m_pVector.size() * dimensions;
-//    int constraintsLength = 1; // cVector.size();
+void ConstraintSolver::apply_constraint()
+{
+    const int dimensions = 2;
+    //int vectorLength = m_pVector.size() * dimensions;
+    int constraintsLength = 1; // cVector.size();
 //
 //    Vec2f q = Vec2f(0.0, 0.0);
 //    Vec2f Q = Vec2f(0.0, 0.0);
@@ -67,7 +67,7 @@ void CircularWireConstraint::apply_constraint()
 ////    m_p->m_Force[0] = sqrt(pow(m_p->m_Force[0],2) / r_scale);
 ////    m_p->m_Force[1] = sqrt(pow(m_p->m_Force[1],2) / r_scale);
 //
-//}
+}
 //
 //Mat2 CircularWireConstraint::MatVec_tMult(Mat2 m, Vec2 v) {
 //    return Mat2(m[0][0] * v[0] + m[1][0] * v[0], m[0][0] * v[1] + m[1][0] * v[1],

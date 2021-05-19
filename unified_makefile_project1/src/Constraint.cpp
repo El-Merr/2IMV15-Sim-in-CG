@@ -4,8 +4,8 @@
 
 #include "Constraint.h"
 
-virtual void draw() {};
-virtual float constraint() {};
-virtual float constraint_derivative() {};
-virtual Vec2f J() {};
-virtual Vec2f J_derivative() {};
+void draw() {};
+float constraint() {};
+float constraint_derivative() {};
+std::vector<Vec2f> J() {};
+std::vector<Vec2f> J_derivative() {};

@@ -3,6 +3,9 @@
 //
 #pragma once
 #include "Particle.h"
+#include "Constraint.h"
+#include <Eigen/Dense>
+#include "Eigen/IterativeLinearSolvers"
 
 #ifndef UNIFIED_MAKEFILE_PROJECT1_CONSTRAINTSOLVER_H
 #define UNIFIED_MAKEFILE_PROJECT1_CONSTRAINTSOLVER_H
@@ -11,12 +14,14 @@
 
 class ConstraintSolver {
 public:
-    ConstraintSolver(std::vector<Particle*> pVector);
+    ConstraintSolver(std::vector<Particle*> pVector, std::vector<Constraint*> cVector);
 
-    void add_constraint();
+//    void add_constraint();
+    void apply_constraint();
 
 private:
     std::vector<Particle*> m_pVec;
+    std::vector<Constraint*> m_cVec;
 
 };
 
