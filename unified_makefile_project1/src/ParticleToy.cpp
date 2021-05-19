@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <GL/glut.h>
+#include <iostream>
 
 /* macros */
 
@@ -210,7 +211,12 @@ static void get_from_UI ()
 	if ( i<1 || i>N || j<1 || j>N ) return;
 
 	if ( mouse_down[0] ) {
-
+	    mouse_down[0].
+        // when left mouse button is pressed and held, a spring force is applied between it and a given particle
+       Vec2f mouse_position((float)i, (float)j);
+       pVector.push_back(new Particle(Vec2f(i, j)));
+       //pVector.push_back(new Particle(Vec2f(0.0,0.0)));
+       printf("Mousepos: %f %f\n", mouse_position[0], mouse_position[1]);
 	}
 
 	if ( mouse_down[2] ) {
