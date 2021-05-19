@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <gfx/mat2.h>
+#include <Eigen/Dense>
+#include <Eigen/IterativeLinearSolvers>
 
 #define PI 3.1415926535897932384626433832795
 
@@ -19,7 +21,7 @@ static void draw_circle(const Vec2f & vect, float radius)
 	glEnd();
 }
 
-CircularWireConstraint::CircularWireConstraint(Particle *p, const Vec2f & center, const double radius) :
+CircularWireConstraint::CircularWireConstraint(Particle* p, const Vec2f & center, const double radius) :
 	m_p(p), m_center(center), m_radius(radius) {
 
 
@@ -28,18 +30,20 @@ CircularWireConstraint::CircularWireConstraint(Particle *p, const Vec2f & center
 void CircularWireConstraint::apply_constraint()
 {
     const int dimensions = 2;
-    //int vectorLength = pVector.size() * dimensions;
+    //int vectorLength = m_pVector.size() * dimensions;
     int constraintsLength = 1; // cVector.size();
 
     Vec2f q = Vec2f(0.0, 0.0);
     Vec2f Q = Vec2f(0.0, 0.0);
     Mat2 W = Mat2();
 
-//    Vec2f C = Vec2f(0.0, 0.0);
-//    VectorXf Cder = VectorXf::Zero(constraintsLength);
+    Vec2f C = Vec2f(0.0, 0.0);
+    VectorXf Cder = VectorXf::Zero(constraintsLength);
 //    MatrixXf J = MatrixXf::Zero(constraintsLength, dimensions);
 //    MatrixXf Jt = MatrixXf::Zero(dimensions, constraintsLength);
-//    MatrixXf Jder = MatrixXf::Zero(constraintsLength, dimensions);
+    MatrixXf Jder = MatrixXf::Zero(constraintsLength, dimensions);
+
+
 
     for (int d = 0; d < dimensions; d++) {
         W(d, d) = 1 / m_p->m_Mass;

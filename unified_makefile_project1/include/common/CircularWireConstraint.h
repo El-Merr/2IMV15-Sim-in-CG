@@ -1,11 +1,15 @@
 #pragma once
 
 #include "Particle.h"
-#include <gfx/mat2.h>
+#include "gfx/mat2.h"
+#include <Eigen/Dense>
+#include "Eigen/IterativeLinearSolvers"
+
+using namespace Eigen;
 
 class CircularWireConstraint {
  public:
-  CircularWireConstraint(Particle *p, const Vec2f & center, const double radius);
+  CircularWireConstraint(Particle* p, const Vec2f & center, const double radius);
 
   void draw();
   void apply_constraint();
