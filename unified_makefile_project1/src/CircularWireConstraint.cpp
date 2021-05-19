@@ -57,19 +57,23 @@ void CircularWireConstraint::apply_constraint()
 
     Vec2f J_derivative = m_p->m_Velocity * 2;
 
-    Mat2 JW = Mat2(J[0]*W[0][0] + J[0]*W[0][1], J[0]*W[1][0] + J[0]*W[1][1],
-                   J[1]*W[0][0] + J[1]*W[0][1], J[1]*W[1][0] + J[1]*W[1][1]);
-
-//    Mat2 JWJ_t = Mat2(JW[0] * J[0],  JW[1] * J[0], //j * j_transposed
-//                      JW[0] * J[1], JW[1] * J[1]);
-
-    Mat2 JWJ_t = MatVec_tMult(JW, J);
-
-    Vec2f J_dq = J_derivative * q;
-
-    Mat2 JWQ_t = MatVec_tMult(JW, Q);
-
-    Vec2f lambda_t = invert(JWJ_t) * (-J_dq - JWQ_t);
+//    Mat2 JW = Mat2(J[0]*W[0][0] + J[0]*W[0][1], J[0]*W[1][0] + J[0]*W[1][1],
+//                   J[1]*W[0][0] + J[1]*W[0][1], J[1]*W[1][0] + J[1]*W[1][1]);
+//
+////    Mat2 JWJ_t = Mat2(JW[0] * J[0],  JW[1] * J[0], //j * j_transposed
+////                      JW[0] * J[1], JW[1] * J[1]);
+//
+//    Mat2 JWJ_t = MatVec_tMult(JW, J);
+//
+//    Vec2f J_dq = J_derivative * q;
+//
+//    Mat2 JWQ_t = transpose(MatVec_tMult(JW, Q));
+//
+//    Vec2f lambda_t = inverse(JWJ_t) * JWQ_t; //(-J_dq - JWQ_t);
+//
+//    Vec2f Q_hat = lambda_t_t * J;
+//
+//    m_p->m_Force += Q_hat;
 
 //    float p_r2 = pow(m_p->m_Force[0],2) + pow(m_p->m_Force[0],2);
 //    float r_scale = pow(m_radius, 2) / p_r2;
@@ -79,10 +83,20 @@ void CircularWireConstraint::apply_constraint()
 
 }
 
-Mat2 CircularWireConstrainst::MatVec_tMult(Mat2 m, Vec2 v) {
+Mat2 CircularWireConstraint::MatVec_tMult(Mat2 m, Vec2 v) {
     return Mat2(m[0][0] * v[0] + m[1][0] * v[0], m[0][0] * v[1] + m[1][0] * v[1],
                 m[0][1] * v[0] + m[1][1] * v[0], m[0][1] * v[1] + m[1][1] * v[1]);
 }
+
+Mat2 CircularWireConstraint::inverse(Mat2 m) {
+    float a = m[0][0];
+    float b = m[0][1];
+    float c = m[1][0];
+    float d = m[1][1];
+    return Mat2(d, -b, -c, a) * (1/(a*d-b*c));
+}
+
+
 
 void CircularWireConstraint::draw()
 {
