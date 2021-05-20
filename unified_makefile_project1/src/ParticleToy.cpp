@@ -2,6 +2,7 @@
 //
 
 #include "Particle.h"
+#include "MouseParticle.h"
 #include "SpringForce.h"
 #include "RodConstraint.h"
 #include "CircularWireConstraint.h"
@@ -28,6 +29,7 @@ static int frame_number;
 
 // static Particle *pList;
 static std::vector<Particle*> pVector;
+static std::vector<Particle*> mousepVector;
 
 static int win_id;
 static int win_x, win_y;
@@ -90,17 +92,17 @@ static void init_system(void)
 	const double dist = 0.2;
 	const Vec2f center(0.0, 0.0);
 	const Vec2f offset(dist, 0.0);
+	float defaultMass = 0.01;
 
 	// Create three particles, attach them to each other, then add a
 	// circular wire constraint to the first.
-	pVector.push_back(new Particle(center + offset));
-	pVector.push_back(new Particle(center + offset + offset));
-	pVector.push_back(new Particle(center + offset + offset + offset));
+	pVector.push_back(new Particle(center + offset, defaultMass));
+	pVector.push_back(new Particle(center + offset + offset, defaultMass));
+	pVector.push_back(new Particle(center + offset + offset + offset, defaultMass));
 	
 	// You should replace these with a vector generalized forces and one of
 	// constraints...
 	springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, 0.001, 0.00001));
-//    springForce.push_back(new SpringForce(pVector[1], pVector[2], dist, 0.1, 0.01));
 	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
 	delete_this_dummy_wire = new CircularWireConstraint(pVector[0], center, dist);
     gravityForce = new GravityForce(pVector);
@@ -201,7 +203,10 @@ static void get_from_UI ()
 	int i, j;
 	// int size, flag;
 	int hi, hj;
-	// float x, y;
+	float x, y;
+	bool hold = false; //is the mouse held down?
+    //MouseParticle mouseParticle;
+
 	if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0] 
 	&& !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
 
@@ -210,13 +215,22 @@ static void get_from_UI ()
 
 	if ( i<1 || i>N || j<1 || j>N ) return;
 
-	if ( mouse_down[0] ) {
-	    mouse_down[0].
-        // when left mouse button is pressed and held, a spring force is applied between it and a given particle
-       Vec2f mouse_position((float)i, (float)j);
-       pVector.push_back(new Particle(Vec2f(i, j)));
-       //pVector.push_back(new Particle(Vec2f(0.0,0.0)));
-       printf("Mousepos: %f %f\n", mouse_position[0], mouse_position[1]);
+    x = (float)2 * i / N - 1;
+    y = (float)2 * j / N - 1;
+
+	if ( mouse_down[0]) {
+
+        if (!hold) {
+            //MouseParticle mouseParticle = MouseParticle::GetInstance(Vec2f(x, y), 0);
+            // when left mouse button is pressed and held, a spring force is applied between it and a given particle
+            //pVector.push_back(mouseParticle);
+            //printf("Mousepos: %f %f\n", x, y);
+
+            auto mouseParticle = new Particle(Vec2f(x, y), 0);
+            mouseParticle->setState(Vec2f(x, y), Vec2f(0.0, 0.0));
+            springForce.push_back(new SpringForce(mouseParticle, pVector[2], 0.2, 0.001, 0.00001));
+        }
+        hold = true;
 	}
 
 	if ( mouse_down[2] ) {
@@ -226,6 +240,11 @@ static void get_from_UI ()
 	hj = (int)(((win_y-hmy)/(float)win_y)*N);
 
 	if( mouse_release[0] ) {
+        if (hold) {
+            hold = false;
+            printf("mouse released\n");
+            //delete(mouseParticle);
+        }
 	}
 
 	omx = mx;
