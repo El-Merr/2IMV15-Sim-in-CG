@@ -91,7 +91,8 @@ void handleMouse() {
     int hi, hj;
     float x, y; // mouse coords
     bool hold = false; //is the mouse held down?
-    //MouseParticle mouseParticle;
+    Particle* mouseParticle;
+    SpringForce* mouseForce;
 
     if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0]
          && !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
@@ -104,19 +105,27 @@ void handleMouse() {
     x = (float)2 * i / N - 1;
     y = (float)2 * j / N - 1;
 
-    if (mouse_down[0] && !hold) {
+    if (mouse_down[0]) {
         //MouseParticle mouseParticle = MouseParticle::GetInstance(Vec2f(x, y), 0);
         // when left mouse button is pressed and held, a spring force is applied between it and a given particle
         //pVector.push_back(mouseParticle);
         //printf("Mousepos: %f %f\n", x, y);
-
-        auto mouseParticle = new Particle(Vec2f(x, y), 0);
+        if (!hold) {
+        mouseParticle = new Particle(Vec2f(x, y), 0);
+        mouseForce = new SpringForce(mouseParticle, pVector[2], 0.2, 0.001, 0.00001);
+        springForce.push_back(mouseForce);
+        }
         mouseParticle->setState(Vec2f(x, y), Vec2f(0.0, 0.0));
-        springForce.push_back(new SpringForce(mouseParticle, pVector[2], 0.2, 0.001, 0.00001));
+        hold = true;
+        //mouse_down[0] = false;
     }
-    hold = true;
-    if (mouse_release[0 && hold]) {
 
+    if (mouse_release[0]) {
+        mouse_release[0] = false;
+        mouse_down[0] = false;
+        printf("mouse released\n");
+        delete mouseParticle;
+        delete mouseForce;
     }
 }
 
@@ -262,11 +271,7 @@ static void get_from_UI ()
 	hj = (int)(((win_y-hmy)/(float)win_y)*N);
 
 	if( mouse_release[0] ) {
-        if (hold) {
-            hold = false;
-            printf("mouse released\n");
-            //delete(mouseParticle);
-        }
+
 	}
 
 	omx = mx;
