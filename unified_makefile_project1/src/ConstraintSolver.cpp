@@ -122,17 +122,4 @@ void ConstraintSolver::apply_constraint()
 ////    m_p->m_Force[1] = sqrt(pow(m_p->m_Force[1],2) / r_scale);
 //
 }
-//
-//Mat2 CircularWireConstraint::MatVec_tMult(Mat2 m, Vec2 v) {
-//    return Mat2(m[0][0] * v[0] + m[1][0] * v[0], m[0][0] * v[1] + m[1][0] * v[1],
-//                m[0][1] * v[0] + m[1][1] * v[0], m[0][1] * v[1] + m[1][1] * v[1]);
-//}
-//
-//Mat2 CircularWireConstraint::inverse(Mat2 m) {
-//    float a = m[0][0];
-//    float b = m[0][1];
-//    float c = m[1][0];
-//    float d = m[1][1];
-//    return Mat2(d, -b, -c, a) * (1/(a*d-b*c));
-//}
 
