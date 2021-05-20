@@ -17,6 +17,8 @@ public:
 //    Constraint(std::vector<Particle*> pVector): pVector(pVector) {};
 
     virtual void draw();
+    virtual std::vector<Particle*> getParticles();
+
     virtual float constraint();
     virtual float constraint_derivative();
     virtual std::vector<Vec2f> J();

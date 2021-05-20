@@ -25,6 +25,13 @@ CircularWireConstraint::CircularWireConstraint(Particle* p, const Vec2f & center
 	m_p(p), m_center(center), m_radius(radius) {
 }
 
+std::vector<Particle*> CircularWireConstraint::getParticles()
+{
+    std::vector<Particle*> particles;
+    particles.push_back(m_p);
+    return particles;
+}
+
 void CircularWireConstraint::draw()
 {
 	draw_circle(m_center, m_radius);

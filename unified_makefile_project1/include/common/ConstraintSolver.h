@@ -6,6 +6,7 @@
 #include "Constraint.h"
 #include <Eigen/Dense>
 #include "Eigen/IterativeLinearSolvers"
+#include <vector>
 
 #ifndef UNIFIED_MAKEFILE_PROJECT1_CONSTRAINTSOLVER_H
 #define UNIFIED_MAKEFILE_PROJECT1_CONSTRAINTSOLVER_H

@@ -15,7 +15,7 @@ class CircularWireConstraint : public Constraint {
   CircularWireConstraint(Particle* p, const Vec2f & center, const double radius);
 
   void draw() override;
-  void apply_constraint();
+  std::vector<Particle*> getParticles() override;
 
     float constraint() override;
     float constraint_derivative() override;
