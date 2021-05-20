@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Particle.h"
-#include "MouseParticle.h"
 
 class SpringForce {
  public:

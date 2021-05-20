@@ -2,7 +2,6 @@
 //
 
 #include "Particle.h"
-#include "MouseParticle.h"
 #include "SpringForce.h"
 #include "RodConstraint.h"
 #include "CircularWireConstraint.h"
@@ -84,6 +83,40 @@ static void clear_forces ( void )
 
     for(ii=0; ii<size; ii++){
         pVector[ii]->clearForce();
+    }
+}
+
+void handleMouse() {
+    int i, j; // screen coords
+    int hi, hj;
+    float x, y; // mouse coords
+    bool hold = false; //is the mouse held down?
+    //MouseParticle mouseParticle;
+
+    if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0]
+         && !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
+
+    i = (int)((       mx /(float)win_x)*N);
+    j = (int)(((win_y-my)/(float)win_y)*N);
+
+    if ( i<1 || i>N || j<1 || j>N ) return;
+
+    x = (float)2 * i / N - 1;
+    y = (float)2 * j / N - 1;
+
+    if (mouse_down[0] && !hold) {
+        //MouseParticle mouseParticle = MouseParticle::GetInstance(Vec2f(x, y), 0);
+        // when left mouse button is pressed and held, a spring force is applied between it and a given particle
+        //pVector.push_back(mouseParticle);
+        //printf("Mousepos: %f %f\n", x, y);
+
+        auto mouseParticle = new Particle(Vec2f(x, y), 0);
+        mouseParticle->setState(Vec2f(x, y), Vec2f(0.0, 0.0));
+        springForce.push_back(new SpringForce(mouseParticle, pVector[2], 0.2, 0.001, 0.00001));
+    }
+    hold = true;
+    if (mouse_release[0 && hold]) {
+
     }
 }
 
@@ -220,17 +253,6 @@ static void get_from_UI ()
 
 	if ( mouse_down[0]) {
 
-        if (!hold) {
-            //MouseParticle mouseParticle = MouseParticle::GetInstance(Vec2f(x, y), 0);
-            // when left mouse button is pressed and held, a spring force is applied between it and a given particle
-            //pVector.push_back(mouseParticle);
-            //printf("Mousepos: %f %f\n", x, y);
-
-            auto mouseParticle = new Particle(Vec2f(x, y), 0);
-            mouseParticle->setState(Vec2f(x, y), Vec2f(0.0, 0.0));
-            springForce.push_back(new SpringForce(mouseParticle, pVector[2], 0.2, 0.001, 0.00001));
-        }
-        hold = true;
 	}
 
 	if ( mouse_down[2] ) {
@@ -322,6 +344,7 @@ static void reshape_func ( int width, int height )
 static void idle_func ( void )
 {
     clear_forces();
+    handleMouse();
     apply_forces();
 
 	if ( dsim ) simulation_step( pVector, dt );
