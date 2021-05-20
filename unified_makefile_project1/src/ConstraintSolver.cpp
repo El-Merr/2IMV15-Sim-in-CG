@@ -82,9 +82,17 @@ void ConstraintSolver::apply_constraint()
     VectorXf Jdq = -1 * J_deriv * q;
     VectorXf JWQ = JW * Q;
 //    RowVectorXf JWQt = JW * Q.transpose();
+//    VectorXf temp = -Jdq.transpose() - JWQ.transpose();
+    VectorXf x = Jdq - JWQ - C - C_deriv;
 
-    VectorXf lambda_t = JWJt.inverse() * ( -Jdq.transpose() - JWQ.transpose());
-    VectorXf Q_hat = lambda_t.transpose() * J;
+    ConjugateGradient<MatrixXf, Lower|Upper> cg;
+    cg.compute(JWJt);
+    auto lambda = cg.solve(x);
+//    auto lambda = ConjGrad();
+
+//    VectorXf lambda_t = JWJt.inverse() * ( -Jdq.transpose() - JWQ.transpose());
+    VectorXf Q_hat = Jt * lambda;
+
 //
     for ( int p = 0; p < m_pVector.size(); p++ ) {
         Particle* particle = m_pVector[p];
