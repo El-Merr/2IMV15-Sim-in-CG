@@ -28,7 +28,6 @@ static int frame_number;
 
 // static Particle *pList;
 static std::vector<Particle*> pVector;
-static std::vector<Particle*> mousepVector;
 
 static int win_id;
 static int win_x, win_y;
@@ -43,6 +42,10 @@ static RodConstraint * delete_this_dummy_rod = NULL;
 static CircularWireConstraint * delete_this_dummy_wire = NULL;
 static GravityForce * gravityForce = NULL;
 
+Particle* mouseParticle = NULL;
+SpringForce* mouseForce = NULL;
+
+bool hold = false; //is the mouse held down?
 
 /*
 ----------------------------------------------------------------------
@@ -88,15 +91,11 @@ static void clear_forces ( void )
 /**
  * Handles mouse interaction during simulation
  * When the left mouse button is held down a spring force between
- * the mouse cursor and the 3d particle is created
+ * the mouse cursor and the 3rd particle is created
  */
 void handleMouse() {
     int i, j; // screen coords
-    int hi, hj;
     float x, y; // mouse coords
-    bool hold = false; //is the mouse held down?
-    Particle* mouseParticle;
-    SpringForce* mouseForce;
 
     if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0]
          && !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
@@ -110,24 +109,21 @@ void handleMouse() {
     y = (float)2 * j / N - 1;
 
     if (mouse_down[0]) {
-        //MouseParticle mouseParticle = MouseParticle::GetInstance(Vec2f(x, y), 0);
         // when left mouse button is pressed and held, a spring force is applied between it and a given particle
-        //pVector.push_back(mouseParticle);
-        //printf("Mousepos: %f %f\n", x, y);
         if (!hold) {
-        mouseParticle = new Particle(Vec2f(x, y), 0);
-        mouseForce = new SpringForce(mouseParticle, pVector[2], 0.2, 0.001, 0.00001);
-        springForce.push_back(mouseForce);
+//            printf("make particle\n");
+            mouseParticle = new Particle(Vec2f(x, y), 0);
+            mouseForce = new SpringForce(mouseParticle, pVector[2], 0.2, 0.001, 0.00001);
         }
-        mouseParticle->setState(Vec2f(x, y), Vec2f(0.0, 0.0));
         hold = true;
-        //mouse_down[0] = false;
+        mouseParticle->setState(Vec2f(x, y), Vec2f(0.0, 0.0));
     }
 
     if (mouse_release[0]) {
-        mouse_release[0] = false;
+//        printf("mouse released\n");
+        hold = false;
         mouse_down[0] = false;
-        printf("mouse released\n");
+        mouse_release[0] = false;
         delete mouseParticle;
         delete mouseForce;
     }
@@ -227,6 +223,10 @@ static void apply_forces ( void )
 
     if (gravityForce)
         gravityForce->applyGravity();
+
+    if (hold) {
+        mouseForce->applySpring();
+    }
 }
 
 static void draw_constraints ( void )
@@ -248,10 +248,8 @@ static void get_from_UI ()
 {
 	int i, j;
 	// int size, flag;
-	int hi, hj;
-	float x, y;
-	bool hold = false; //is the mouse held down?
-    //MouseParticle mouseParticle;
+//	int hi, hj;
+//	float x, y;
 
 	if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0] 
 	&& !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
@@ -261,8 +259,8 @@ static void get_from_UI ()
 
 	if ( i<1 || i>N || j<1 || j>N ) return;
 
-    x = (float)2 * i / N - 1;
-    y = (float)2 * j / N - 1;
+//    x = (float)2 * i / N - 1;
+//    y = (float)2 * j / N - 1;
 
 	if ( mouse_down[0]) {
 
@@ -271,8 +269,8 @@ static void get_from_UI ()
 	if ( mouse_down[2] ) {
 	}
 
-	hi = (int)((       hmx /(float)win_x)*N);
-	hj = (int)(((win_y-hmy)/(float)win_y)*N);
+//	hi = (int)((       hmx /(float)win_x)*N);
+//	hj = (int)(((win_y-hmy)/(float)win_y)*N);
 
 	if( mouse_release[0] ) {
 
@@ -353,11 +351,16 @@ static void reshape_func ( int width, int height )
 static void idle_func ( void )
 {
     clear_forces();
-    handleMouse();
-    apply_forces();
 
-	if ( dsim ) simulation_step( pVector, dt );
-	else        {get_from_UI();remap_GUI();}
+	if ( dsim ) {
+        handleMouse();
+        apply_forces();
+	    simulation_step( pVector, dt );
+	}
+	else {
+	    get_from_UI();
+	    remap_GUI();
+	}
 
 	glutSetWindow ( win_id );
 	glutPostRedisplay ();
@@ -370,6 +373,10 @@ static void display_func ( void )
 	draw_forces();
 	draw_constraints();
 	draw_particles();
+	if (hold) {
+	    mouseParticle->draw();
+	    mouseForce->draw();
+	}
 
 	post_display ();
 }
