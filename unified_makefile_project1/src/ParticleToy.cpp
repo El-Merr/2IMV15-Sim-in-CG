@@ -85,7 +85,11 @@ static void clear_forces ( void )
         pVector[ii]->clearForce();
     }
 }
-
+/**
+ * Handles mouse interaction during simulation
+ * When the left mouse button is held down a spring force between
+ * the mouse cursor and the 3d particle is created
+ */
 void handleMouse() {
     int i, j; // screen coords
     int hi, hj;
