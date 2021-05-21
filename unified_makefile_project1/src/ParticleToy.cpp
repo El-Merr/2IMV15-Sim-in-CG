@@ -155,12 +155,8 @@ static void init_system(void)
 	// You should replace these with a vector generalized forces and one of
 	// constraints...
 	springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, 0.001, 0.00001));
-<<<<<<< Updated upstream
-	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
-=======
 //    springForce.push_back(new SpringForce(pVector[1], pVector[2], dist, 0.1, 0.01));
 	rodConstraint = new RodConstraint(pVector[1], pVector[2], dist);
->>>>>>> Stashed changes
 	circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
     gravityForce = new GravityForce(pVector);
 
