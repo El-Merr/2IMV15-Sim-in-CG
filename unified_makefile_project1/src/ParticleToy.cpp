@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <GL/glut.h>
+#include <iostream>
 
 /* macros */
 
@@ -46,6 +47,10 @@ static RodConstraint * delete_this_dummy_rod = NULL;
 static CircularWireConstraint * circularWireConstraint = NULL;
 static GravityForce * gravityForce = NULL;
 
+Particle* mouseParticle = NULL;
+SpringForce* mouseForce = NULL;
+
+bool hold = false; //is the mouse held down?
 
 /*
 ----------------------------------------------------------------------
@@ -93,23 +98,63 @@ static void clear_forces ( void )
         pVector[ii]->clearForce();
     }
 }
+/**
+ * Handles mouse interaction during simulation
+ * When the left mouse button is held down a spring force between
+ * the mouse cursor and the 3rd particle is created
+ */
+void handleMouse() {
+    int i, j; // screen coords
+    float x, y; // mouse coords
+
+    if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0]
+         && !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
+
+    i = (int)((       mx /(float)win_x)*N);
+    j = (int)(((win_y-my)/(float)win_y)*N);
+
+    if ( i<1 || i>N || j<1 || j>N ) return;
+
+    x = (float)2 * i / N - 1;
+    y = (float)2 * j / N - 1;
+
+    if (mouse_down[0]) {
+        // when left mouse button is pressed and held, a spring force is applied between it and a given particle
+        if (!hold) {
+//            printf("make particle\n");
+            mouseParticle = new Particle(Vec2f(x, y), 0);
+            mouseForce = new SpringForce(mouseParticle, pVector[2], 0.2, 0.001, 0.00001);
+        }
+        hold = true;
+        mouseParticle->setState(Vec2f(x, y), Vec2f(0.0, 0.0));
+    }
+
+    if (mouse_release[0]) {
+//        printf("mouse released\n");
+        hold = false;
+        mouse_down[0] = false;
+        mouse_release[0] = false;
+        delete mouseParticle;
+        delete mouseForce;
+    }
+}
 
 static void init_system(void)
 {
 	const double dist = 0.2;
 	const Vec2f center(0.0, 0.0);
 	const Vec2f offset(dist, 0.0);
+	float defaultMass = 0.01;
 
 	// Create three particles, attach them to each other, then add a
 	// circular wire constraint to the first.
-	pVector.push_back(new Particle(center + offset));
-	pVector.push_back(new Particle(center + offset + offset));
-	pVector.push_back(new Particle(center + offset + offset + offset));
+	pVector.push_back(new Particle(center + offset, defaultMass));
+	pVector.push_back(new Particle(center + offset + offset, defaultMass));
+	pVector.push_back(new Particle(center + offset + offset + offset, defaultMass));
 	
 	// You should replace these with a vector generalized forces and one of
 	// constraints...
 	springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, 0.001, 0.00001));
-//    springForce.push_back(new SpringForce(pVector[1], pVector[2], dist, 0.1, 0.01));
 	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
 	circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
     gravityForce = new GravityForce(pVector);
@@ -195,8 +240,13 @@ static void apply_forces ( void )
         springForce[spring]->applySpring();
     }
 
-    if (gravityForce)
-        gravityForce->apply_gravity();
+    if (gravityForce) {
+        gravityForce->applyGravity();
+    }
+
+    if (hold) {
+        mouseForce->applySpring();
+    }
 }
 
 static void draw_constraints ( void )
@@ -218,8 +268,9 @@ static void get_from_UI ()
 {
 	int i, j;
 	// int size, flag;
-	int hi, hj;
-	// float x, y;
+//	int hi, hj;
+//	float x, y;
+
 	if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0] 
 	&& !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
 
@@ -228,17 +279,21 @@ static void get_from_UI ()
 
 	if ( i<1 || i>N || j<1 || j>N ) return;
 
-	if ( mouse_down[0] ) {
+//    x = (float)2 * i / N - 1;
+//    y = (float)2 * j / N - 1;
+
+	if ( mouse_down[0]) {
 
 	}
 
 	if ( mouse_down[2] ) {
 	}
 
-	hi = (int)((       hmx /(float)win_x)*N);
-	hj = (int)(((win_y-hmy)/(float)win_y)*N);
+//	hi = (int)((       hmx /(float)win_x)*N);
+//	hj = (int)(((win_y-hmy)/(float)win_y)*N);
 
 	if( mouse_release[0] ) {
+
 	}
 
 	omx = mx;
@@ -316,11 +371,17 @@ static void reshape_func ( int width, int height )
 static void idle_func ( void )
 {
     clear_forces();
-    apply_forces();
-    apply_constraints();
 
-	if ( dsim ) simulation_step( pVector, dt );
-	else        {get_from_UI();remap_GUI();}
+	if ( dsim ) {
+      handleMouse();
+      apply_forces();
+      apply_constraints();
+	    simulation_step( pVector, dt );
+	}
+	else {
+	    get_from_UI();
+	    remap_GUI();
+	}
 
 	glutSetWindow ( win_id );
 	glutPostRedisplay ();
@@ -333,6 +394,10 @@ static void display_func ( void )
 	draw_forces();
 	draw_constraints();
 	draw_particles();
+	if (hold) {
+	    mouseParticle->draw();
+	    mouseForce->draw();
+	}
 
 	post_display ();
 }
