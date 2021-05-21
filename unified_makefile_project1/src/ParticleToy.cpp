@@ -95,7 +95,7 @@ static void clear_forces ( void )
     int ii, size = pVector.size();
 
     for(ii=0; ii<size; ii++){
-        pVector[ii]->clearForce();
+        pVector[ii]->clear_force();
     }
 }
 /**
@@ -103,7 +103,7 @@ static void clear_forces ( void )
  * When the left mouse button is held down a spring force between
  * the mouse cursor and the 3rd particle is created
  */
-void handleMouse() {
+void handle_mouse() {
     int i, j; // screen coords
     float x, y; // mouse coords
 
@@ -123,10 +123,10 @@ void handleMouse() {
         if (!hold) {
 //            printf("make particle\n");
             mouseParticle = new Particle(Vec2f(x, y), 0);
-            mouseForce = new SpringForce(mouseParticle, pVector[2], 0.2, 0.001, 0.00001);
+            mouseForce = new SpringForce(mouseParticle, pVector[2], 0.5, 0.001, 0.00001);
         }
         hold = true;
-        mouseParticle->setState(Vec2f(x, y), Vec2f(0.0, 0.0));
+        mouseParticle->set_state(Vec2f(x, y), Vec2f(0.0, 0.0));
     }
 
     if (mouse_release[0]) {
@@ -237,15 +237,15 @@ static void apply_forces ( void )
 {
     for(int spring=0; spring<springForce.size(); spring++)
     {
-        springForce[spring]->applySpring();
+        springForce[spring]->apply_spring();
     }
 
     if (gravityForce) {
-        gravityForce->applyGravity();
+        gravityForce->apply_gravity();
     }
 
     if (hold) {
-        mouseForce->applySpring();
+        mouseForce->apply_spring();
     }
 }
 
@@ -373,7 +373,7 @@ static void idle_func ( void )
     clear_forces();
 
 	if ( dsim ) {
-      handleMouse();
+      handle_mouse();
       apply_forces();
       apply_constraints();
 	    simulation_step( pVector, dt );

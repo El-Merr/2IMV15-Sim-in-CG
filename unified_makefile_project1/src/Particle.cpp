@@ -20,31 +20,31 @@ void Particle::reset()
 	m_Mass = 0.01;
 }
 
-void Particle::clearForce()
+void Particle::clear_force()
 {
     m_Force = Vec2f(0.0, 0.0);
 }
 
-Vec2f Particle::getState()
+Vec2f Particle::get_state()
 {
     return NULL; //Vec2f(m_Position, m_Velocity);
 }
 
-void Particle::setState(Vec2f pos, Vec2f vel)
+void Particle::set_state(Vec2f pos, Vec2f vel)
 {
     m_Position = pos;
     m_Velocity = vel;
 }
 
-std::vector<Vec2f> Particle::deriveEval() { // returns a vector of the velocity and the acceleration
+std::vector<Vec2f> Particle::derive_eval() { // returns a vector of the velocity and the acceleration
     std::vector<Vec2f> eval;
     eval.push_back(m_Velocity);
     eval.push_back(m_Force / m_Mass);
     return eval;
 }
 
-void Particle::computeVelocity() {
-    std::vector<Vec2f> eval = deriveEval();
+void Particle::compute_velocity() {
+    std::vector<Vec2f> eval = derive_eval();
     m_Velocity += eval[1];
 }
 

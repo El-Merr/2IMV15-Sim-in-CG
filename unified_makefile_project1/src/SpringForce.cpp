@@ -17,7 +17,7 @@ SpringForce::SpringForce(Particle *p1, Particle *p2, double dist, double ks, dou
 /**
  * Applies spring force between two points.
  */
-void SpringForce::applySpring()
+void SpringForce::apply_spring()
 {
     Vec2f p = m_p2->m_Position - m_p1->m_Position;
     float length = sqrt(p * p);
