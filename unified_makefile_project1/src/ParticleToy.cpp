@@ -123,7 +123,7 @@ void handle_mouse() {
         if (!hold) {
 //            printf("make particle\n");
             mouseParticle = new Particle(Vec2f(x, y), 0);
-            mouseForce = new SpringForce(mouseParticle, pVector[2], 0.5, 0.001, 0.00001);
+            mouseForce = new SpringForce(mouseParticle, pVector[1], 0.6, 0.00004, 0.0000001);
         }
         hold = true;
         mouseParticle->set_state(Vec2f(x, y), Vec2f(0.0, 0.0));
