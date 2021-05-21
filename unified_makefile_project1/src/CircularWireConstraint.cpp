@@ -55,7 +55,7 @@ std::vector<Vec2f> CircularWireConstraint::J()
     Vec2f j = pos_diff * 2;
     std::vector<Vec2f> res;
     res.push_back(j);
-    return res; //std::vector<Vec2f>(j);
+    return res;
 }
 
 std::vector<Vec2f> CircularWireConstraint::J_derivative()
@@ -63,5 +63,5 @@ std::vector<Vec2f> CircularWireConstraint::J_derivative()
     Vec2f j_deriv = m_p->m_Velocity * 2;
     std::vector<Vec2f> res;
     res.push_back(j_deriv);
-    return res; //std::vector<Vec2f>(j_deriv);
+    return res;
 }
