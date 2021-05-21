@@ -7,6 +7,8 @@
 #include "CircularWireConstraint.h"
 #include "GravityForce.h"
 #include "imageio.h"
+#include "Constraint.h"
+#include "ConstraintSolver.h"
 
 #include <vector>
 #include <stdlib.h>
@@ -37,9 +39,12 @@ static int mouse_shiftclick[3];
 static int omx, omy, mx, my;
 static int hmx, hmy;
 
+static std::vector<Constraint*> constraints;
+static ConstraintSolver* constraintSolver = NULL;
+
 static std::vector<SpringForce*> springForce;
 static RodConstraint * delete_this_dummy_rod = NULL;
-static CircularWireConstraint * delete_this_dummy_wire = NULL;
+static CircularWireConstraint * circularWireConstraint = NULL;
 static GravityForce * gravityForce = NULL;
 
 Particle* mouseParticle = NULL;
@@ -56,18 +61,23 @@ free/clear/allocate simulation data
 static void free_data ( void )
 {
 	pVector.clear();
+	constraints.clear();
 	if (delete_this_dummy_rod) {
 		delete delete_this_dummy_rod;
 		delete_this_dummy_rod = NULL;
 	}
     springForce.clear();
-	if (delete_this_dummy_wire) {
-		delete delete_this_dummy_wire;
-		delete_this_dummy_wire = NULL;
+	if (circularWireConstraint) {
+		delete circularWireConstraint;
+        circularWireConstraint = NULL;
 	}
     if (gravityForce) {
         delete gravityForce;
         gravityForce = NULL;
+    }
+    if (constraintSolver) {
+        delete constraintSolver;
+        constraintSolver = NULL;
     }
 }
 
@@ -146,8 +156,11 @@ static void init_system(void)
 	// constraints...
 	springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, 0.001, 0.00001));
 	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
-	delete_this_dummy_wire = new CircularWireConstraint(pVector[0], center, dist);
+	circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
     gravityForce = new GravityForce(pVector);
+
+    constraints.push_back(circularWireConstraint);
+    constraintSolver = new ConstraintSolver(pVector, constraints);
 
 }
 
@@ -193,6 +206,12 @@ static void post_display ( void )
 	glutSwapBuffers ();
 }
 
+static void apply_constraints ( void )
+{
+    if (constraintSolver)
+        constraintSolver->apply_constraint();
+}
+
 static void draw_particles ( void )
 {
 	int size = pVector.size();
@@ -221,8 +240,9 @@ static void apply_forces ( void )
         springForce[spring]->applySpring();
     }
 
-    if (gravityForce)
+    if (gravityForce) {
         gravityForce->applyGravity();
+    }
 
     if (hold) {
         mouseForce->applySpring();
@@ -234,8 +254,8 @@ static void draw_constraints ( void )
 	// change this to iteration over full set
 	if (delete_this_dummy_rod)
 		delete_this_dummy_rod->draw();
-	if (delete_this_dummy_wire)
-		delete_this_dummy_wire->draw();
+	if (circularWireConstraint)
+        circularWireConstraint->draw();
 }
 
 /*
@@ -353,8 +373,9 @@ static void idle_func ( void )
     clear_forces();
 
 	if ( dsim ) {
-        handleMouse();
-        apply_forces();
+      handleMouse();
+      apply_forces();
+      apply_constraints();
 	    simulation_step( pVector, dt );
 	}
 	else {
