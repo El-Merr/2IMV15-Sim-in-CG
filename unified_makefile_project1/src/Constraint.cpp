@@ -5,9 +5,9 @@
 #include "Constraint.h"
 
 void draw() {};
-std::vector<Particle*> getParticles() {};
+std::vector<Particle*> getParticles() { return std::vector<Particle*>({}); };
 
-float constraint() {};
-float constraint_derivative() {};
-std::vector<Vec2f> J() {};
-std::vector<Vec2f> J_derivative() {};
+float constraint() { return 0; };
+float constraint_derivative() { return 0; };
+std::vector<Vec2f> J() { return std::vector<Vec2f>({(0.0)}); };
+std::vector<Vec2f> J_derivative() { return std::vector<Vec2f>({(0.0)}); };
