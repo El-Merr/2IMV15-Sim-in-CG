@@ -281,8 +281,12 @@ static void draw_constraints ( void )
 	// change this to iteration over full set
 	if (delete_this_dummy_rod)
 		delete_this_dummy_rod->draw();
-	if (circularWireConstraint)
-        circularWireConstraint->draw();
+//	if (circularWireConstraint)
+//        circularWireConstraint->draw();
+
+	for (int ii; ii < constraints.size(); ii++) {
+	    constraints[ii]->draw();
+	}
 }
 
 /*
