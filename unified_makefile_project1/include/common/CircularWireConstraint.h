@@ -28,6 +28,4 @@ class CircularWireConstraint : public Constraint {
   Particle * const m_p;
   Vec2f const m_center;
   double const m_radius;
-//  Mat2 MatVec_tMult(Mat2 m, Vec2 v);
-//  Mat2 inverse(Mat2 m);
 };

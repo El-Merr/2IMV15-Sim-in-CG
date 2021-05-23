@@ -44,7 +44,7 @@ static std::vector<Constraint*> constraints;
 static ConstraintSolver* constraintSolver = NULL;
 
 static std::vector<SpringForce*> springForce;
-static RodConstraint * delete_this_dummy_rod = NULL;
+static RodConstraint * rodConstraint = NULL;
 static CircularWireConstraint * circularWireConstraint = NULL;
 static GravityForce * gravityForce = NULL;
 
@@ -63,9 +63,9 @@ static void free_data ( void )
 {
 	pVector.clear();
 	constraints.clear();
-	if (delete_this_dummy_rod) {
-		delete delete_this_dummy_rod;
-		delete_this_dummy_rod = NULL;
+	if (rodConstraint) {
+		delete rodConstraint;
+        rodConstraint = NULL;
 	}
     springForce.clear();
 	if (circularWireConstraint) {
@@ -158,10 +158,11 @@ static void init_system(int sceneNr)
             mouse_particle_index = 1; // sets the 2nd particle to be the mouse interaction particle.
 
             springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, 0.001, 0.00001));
-            delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
+            rodConstraint = new RodConstraint(pVector[1], pVector[2], dist);
             circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
 
             constraints.push_back(circularWireConstraint);
+			constraints.push_back(rodConstraint);
             constraintSolver = new ConstraintSolver(pVector, constraints);
 
             break;
@@ -281,12 +282,6 @@ static void apply_forces ( void )
 
 static void draw_constraints ( void )
 {
-	// change this to iteration over full set
-	if (delete_this_dummy_rod)
-		delete_this_dummy_rod->draw();
-//	if (circularWireConstraint)
-//        circularWireConstraint->draw();
-
 	for (int ii; ii < constraints.size(); ii++) {
 	    constraints[ii]->draw();
 	}
