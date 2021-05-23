@@ -148,7 +148,7 @@ static void init_system(int sceneNr)
 	float defaultMass = 0.01;
 
 	switch(sceneNr) {
-        case 0: //default scene
+        case 0: {//default scene
             // Create three particles, attach them to each other, then add a
             // circular wire constraint to the first.
             pVector.push_back(new Particle(center + offset, defaultMass));
@@ -162,35 +162,70 @@ static void init_system(int sceneNr)
             circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
 
             constraints.push_back(circularWireConstraint);
-			constraints.push_back(rodConstraint);
+            constraints.push_back(rodConstraint);
             constraintSolver = new ConstraintSolver(pVector, constraints);
 
             break;
+        }
 
-        case 1: //cloth scene
+        case 1: {//cloth scene
             mouse_particle_index = 20;
 
             for (int i = 0; i < 5; i++) {
                 for (int j = 0; j < 5; j++) {
                     pVector.push_back(new Particle(center - 2 * offset +
-                        Vec2f(i * dist, j * dist), 0.001));
+                                                   Vec2f(i * dist, j * dist), 0.001));
                 }
             }
             int size = pVector.size();
 
-            for(int ii=0; ii < size - 1; ii++) {
+            for (int ii = 0; ii < size - 1; ii++) {
                 if ((ii + 1) % 5 != 0) {
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist*2, 0.001, 0.00001));
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist * 2, 0.001, 0.00001));
                 }
-                if (ii < 20 ) {
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist*2, 0.001, 0.00001));
+                if (ii < 20) {
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist * 2, 0.001, 0.00001));
                 }
-                circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-3 * dist, 5 * dist), dist);
-                auto circularWireConstraint2 = new CircularWireConstraint(pVector[24], center + Vec2f(3 * dist, 5 * dist), dist);
+                circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-3 * dist, 5 * dist),
+                                                                    dist);
+                auto circularWireConstraint2 = new CircularWireConstraint(pVector[24],
+                                                                          center + Vec2f(3 * dist, 5 * dist), dist);
                 constraints.push_back(circularWireConstraint);
                 constraints.push_back(circularWireConstraint2);
                 constraintSolver = new ConstraintSolver(pVector, constraints);
             }
+            break;
+        }
+        case 2: {//cloth scene
+            mouse_particle_index = 20;
+
+            for (int i = 0; i < 5; i++) {
+                for (int j = 0; j < 5; j++) {
+                    pVector.push_back(new Particle(center - 2 * offset +
+                                                   Vec2f(i * dist, j * dist), 0.001));
+                }
+            }
+            int size = pVector.size();
+
+            for (int ii = 0; ii < size - 1; ii++) {
+                if ((ii + 1) % 5 != 0) {
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist * 2, 0.001, 0.00001));
+                }
+                if (ii < 20) {
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist * 2, 0.001, 0.00001));
+                }
+                circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-3 * dist, 5 * dist),
+                                                                    dist);
+                auto circularWireConstraint2 = new CircularWireConstraint(pVector[24],
+                                                                          center + Vec2f(3 * dist, 5 * dist), dist);
+                auto rodConstraint2 = new RodConstraint(pVector[4], pVector[24], 5 * dist);
+                constraints.push_back(circularWireConstraint);
+                constraints.push_back(circularWireConstraint2);
+                constraints.push_back(rodConstraint2);
+                constraintSolver = new ConstraintSolver(pVector, constraints);
+            }
+            break;
+        }
     }
     gravityForce = new GravityForce(pVector);
 }
@@ -375,6 +410,10 @@ static void key_func ( unsigned char key, int x, int y )
         case '2':
             free_data();
             init_system(1);
+            break;
+	    case '3':
+            free_data();
+            init_system(2);
             break;
     }
 }
