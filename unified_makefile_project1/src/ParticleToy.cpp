@@ -27,6 +27,7 @@ static float dt, d;
 static int dsim;
 static int dump_frames;
 static int frame_number;
+static int mouse_particle_index;
 
 // static Particle *pList;
 static std::vector<Particle*> pVector;
@@ -123,7 +124,7 @@ void handle_mouse() {
         if (!hold) {
 //            printf("make particle\n");
             mouseParticle = new Particle(Vec2f(x, y), 0);
-            mouseForce = new SpringForce(mouseParticle, pVector[1], 0.6, 0.00004, 0.0000001);
+            mouseForce = new SpringForce(mouseParticle, pVector[mouse_particle_index], 0.6, 0.00004, 0.0000001);
         }
         hold = true;
         mouseParticle->set_state(Vec2f(x, y), Vec2f(0.0, 0.0));
@@ -154,8 +155,8 @@ static void init_system(int sceneNr)
             pVector.push_back(new Particle(center + offset + offset, defaultMass));
             pVector.push_back(new Particle(center + offset + offset + offset, defaultMass));
 
-            // You should replace these with a vector generalized forces and one of
-            // constraints...
+            mouse_particle_index = 1; // sets the 2nd particle to be the mouse interaction particle.
+
             springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, 0.001, 0.00001));
             delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
             circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
@@ -166,6 +167,8 @@ static void init_system(int sceneNr)
             break;
 
         case 1: //cloth scene
+            mouse_particle_index = 20;
+
             for (int i = 0; i < 5; i++) {
                 for (int j = 0; j < 5; j++) {
                     pVector.push_back(new Particle(center - 2 * offset +
