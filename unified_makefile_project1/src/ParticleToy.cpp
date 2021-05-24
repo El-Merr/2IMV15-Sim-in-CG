@@ -9,12 +9,14 @@
 #include "imageio.h"
 #include "Constraint.h"
 #include "ConstraintSolver.h"
+#include "Wall.h"
 
 #include <vector>
 #include <stdlib.h>
 #include <stdio.h>
 #include <GL/glut.h>
 #include <iostream>
+
 
 /* macros */
 
@@ -50,6 +52,7 @@ static GravityForce * gravityForce = NULL;
 
 Particle* mouseParticle = NULL;
 SpringForce* mouseForce = NULL;
+Wall* wall = NULL;
 
 bool hold = false; //is the mouse held down?
 
@@ -79,6 +82,10 @@ static void free_data ( void )
     if (constraintSolver) {
         delete constraintSolver;
         constraintSolver = NULL;
+    }
+    if (wall) {
+        delete wall;
+        wall = NULL;
     }
 }
 
@@ -207,21 +214,25 @@ static void init_system(int sceneNr)
             }
             int size = pVector.size();
 
+            wall = new Wall(-0.4, -0.2, 0.4, 0.2);
+            //wall->draw();
+
             for (int ii = 0; ii < size - 1; ii++) {
                 if ((ii + 1) % 5 != 0) {
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist * 2, 0.001, 0.00001));
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist * 1.5, 0.001, 0.00001));
                 }
                 if (ii < 20) {
+                    if ((ii + 1) % 5 == 0) {
+                        constraints.push_back(new RodConstraint(pVector[ii], pVector[ii+5], dist));
+                    }
                     springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist * 2, 0.001, 0.00001));
                 }
-                circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-3 * dist, 5 * dist),
-                                                                    dist);
-                auto circularWireConstraint2 = new CircularWireConstraint(pVector[24],
-                                                                          center + Vec2f(3 * dist, 5 * dist), dist);
-                auto rodConstraint2 = new RodConstraint(pVector[4], pVector[24], 5 * dist);
-                constraints.push_back(circularWireConstraint);
-                constraints.push_back(circularWireConstraint2);
-                constraints.push_back(rodConstraint2);
+                //circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-2.5 * dist, 4.5 * dist), 0.1);
+                //auto circularWireConstraint2 = new CircularWireConstraint(pVector[24], center + Vec2f(2.5 * dist, 4.5 * dist), 0.1);
+
+                //auto rodConstraint2 = new RodConstraint(pVector[4], pVector[24], 4 * dist);
+                //constraints.push_back(circularWireConstraint);
+                //constraints.push_back(circularWireConstraint2);
                 constraintSolver = new ConstraintSolver(pVector, constraints);
             }
             break;
@@ -320,6 +331,7 @@ static void draw_constraints ( void )
 	for (int ii; ii < constraints.size(); ii++) {
 	    constraints[ii]->draw();
 	}
+    wall->draw();
 }
 
 /*
