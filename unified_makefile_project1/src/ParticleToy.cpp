@@ -27,6 +27,7 @@ static float dt, d;
 static int dsim;
 static int dump_frames;
 static int frame_number;
+static int mouse_particle_index;
 
 // static Particle *pList;
 static std::vector<Particle*> pVector;
@@ -43,7 +44,7 @@ static std::vector<Constraint*> constraints;
 static ConstraintSolver* constraintSolver = NULL;
 
 static std::vector<SpringForce*> springForce;
-static RodConstraint * delete_this_dummy_rod = NULL;
+static RodConstraint * rodConstraint = NULL;
 static CircularWireConstraint * circularWireConstraint = NULL;
 static GravityForce * gravityForce = NULL;
 
@@ -62,9 +63,9 @@ static void free_data ( void )
 {
 	pVector.clear();
 	constraints.clear();
-	if (delete_this_dummy_rod) {
-		delete delete_this_dummy_rod;
-		delete_this_dummy_rod = NULL;
+	if (rodConstraint) {
+		delete rodConstraint;
+        rodConstraint = NULL;
 	}
     springForce.clear();
 	if (circularWireConstraint) {
@@ -121,9 +122,31 @@ void handle_mouse() {
     if (mouse_down[0]) {
         // when left mouse button is pressed and held, a spring force is applied between it and a given particle
         if (!hold) {
-//            printf("make particle\n");
-            mouseParticle = new Particle(Vec2f(x, y), 0);
-            mouseForce = new SpringForce(mouseParticle, pVector[1], 0.6, 0.00004, 0.0000001);
+            // try to find a particle to drag, otherwise there is no particle in the scene
+            try {
+                // create a particle at the mouse position
+                mouseParticle = new Particle(Vec2f(x, y), 0);
+
+                // find the particle in pVector that is closest to the mouse
+                Particle* dragParticle = pVector[0];
+                float dist = sqrt( pow(mouseParticle->m_Position[0] - pVector[0]->m_Position[0], 2)
+                                   + pow(mouseParticle->m_Position[1] - pVector[0]->m_Position[1], 2) );
+                float new_dist = 0;
+                for ( auto p : pVector ) {
+                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - p->m_Position[0], 2)
+                                     + pow(mouseParticle->m_Position[1] - p->m_Position[1], 2) );
+                    if (new_dist < dist) {
+                        dist = new_dist;
+                        dragParticle = p;
+                    }
+                }
+
+                // create springforce between mouse and closest particle
+                mouseForce = new SpringForce(mouseParticle, dragParticle, 0.6, 0.00004, 0.0000001);
+            } catch (...) {
+                printf("There is no particle to drag");
+            }
+
         }
         hold = true;
         mouseParticle->set_state(Vec2f(x, y), Vec2f(0.0, 0.0));
@@ -139,29 +162,59 @@ void handle_mouse() {
     }
 }
 
-static void init_system(void)
+static void init_system(int sceneNr)
 {
 	const double dist = 0.2;
 	const Vec2f center(0.0, 0.0);
 	const Vec2f offset(dist, 0.0);
 	float defaultMass = 0.01;
 
-	// Create three particles, attach them to each other, then add a
-	// circular wire constraint to the first.
-	pVector.push_back(new Particle(center + offset, defaultMass));
-	pVector.push_back(new Particle(center + offset + offset, defaultMass));
-	pVector.push_back(new Particle(center + offset + offset + offset, defaultMass));
-	
-	// You should replace these with a vector generalized forces and one of
-	// constraints...
-	springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, 0.001, 0.00001));
-	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
-	circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
+	switch(sceneNr) {
+        case 0: //default scene
+            // Create three particles, attach them to each other, then add a
+            // circular wire constraint to the first.
+            pVector.push_back(new Particle(center + offset, defaultMass));
+            pVector.push_back(new Particle(center + offset + offset, defaultMass));
+            pVector.push_back(new Particle(center + offset + offset + offset, defaultMass));
+
+            mouse_particle_index = 1; // sets the 2nd particle to be the mouse interaction particle.
+
+            springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, 0.001, 0.00001));
+            rodConstraint = new RodConstraint(pVector[1], pVector[2], dist);
+            circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
+
+            constraints.push_back(circularWireConstraint);
+			constraints.push_back(rodConstraint);
+            constraintSolver = new ConstraintSolver(pVector, constraints);
+
+            break;
+
+        case 1: //cloth scene
+            mouse_particle_index = 20;
+
+            for (int i = 0; i < 5; i++) {
+                for (int j = 0; j < 5; j++) {
+                    pVector.push_back(new Particle(center - 2 * offset +
+                        Vec2f(i * dist, j * dist), 0.001));
+                }
+            }
+            int size = pVector.size();
+
+            for(int ii=0; ii < size - 1; ii++) {
+                if ((ii + 1) % 5 != 0) {
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist*2, 0.001, 0.00001));
+                }
+                if (ii < 20 ) {
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist*2, 0.001, 0.00001));
+                }
+                circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-3 * dist, 5 * dist), dist);
+                auto circularWireConstraint2 = new CircularWireConstraint(pVector[24], center + Vec2f(3 * dist, 5 * dist), dist);
+                constraints.push_back(circularWireConstraint);
+                constraints.push_back(circularWireConstraint2);
+                constraintSolver = new ConstraintSolver(pVector, constraints);
+            }
+    }
     gravityForce = new GravityForce(pVector);
-
-    constraints.push_back(circularWireConstraint);
-    constraintSolver = new ConstraintSolver(pVector, constraints);
-
 }
 
 /*
@@ -251,11 +304,9 @@ static void apply_forces ( void )
 
 static void draw_constraints ( void )
 {
-	// change this to iteration over full set
-	if (delete_this_dummy_rod)
-		delete_this_dummy_rod->draw();
-	if (circularWireConstraint)
-        circularWireConstraint->draw();
+	for (int ii; ii < constraints.size(); ii++) {
+	    constraints[ii]->draw();
+	}
 }
 
 /**
@@ -294,7 +345,6 @@ static void get_from_UI ()
 //    y = (float)2 * j / N - 1;
 
 	if ( mouse_down[0]) {
-
 	}
 
 	if ( mouse_down[2] ) {
@@ -329,28 +379,37 @@ GLUT callback routines
 
 static void key_func ( unsigned char key, int x, int y )
 {
-	switch ( key )
-	{
-	case 'c':
-	case 'C':
-		clear_data ();
-		break;
+	switch ( key ) {
+        case 'c':
+        case 'C':
+            clear_data();
+            break;
 
-	case 'd':
-	case 'D':
-		dump_frames = !dump_frames;
-		break;
+        case 'd':
+        case 'D':
+            dump_frames = !dump_frames;
+            break;
 
-	case 'q':
-	case 'Q':
-		free_data ();
-		exit ( 0 );
-		break;
+        case 'q':
+        case 'Q':
+            free_data();
+            exit(0);
+            break;
 
-	case ' ':
-		dsim = !dsim;
-		break;
-	}
+        case ' ':
+            dsim = !dsim;
+            break;
+
+        case '1':
+            free_data();
+            init_system(0);
+            break;
+
+        case '2':
+            free_data();
+            init_system(1);
+            break;
+    }
 }
 
 static void mouse_func ( int button, int state, int x, int y )
@@ -484,7 +543,7 @@ int main ( int argc, char ** argv )
 	dump_frames = 0;
 	frame_number = 0;
 	
-	init_system();
+	init_system(0);
 	
 	win_x = 800;
 	win_y = 800;
