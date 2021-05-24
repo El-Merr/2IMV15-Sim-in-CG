@@ -258,6 +258,17 @@ static void draw_constraints ( void )
         circularWireConstraint->draw();
 }
 
+/**
+ * Draw selected numerical integration scheme.
+ */
+static void draw_integration_schemes ( void )
+{
+    for(int ii=0; ii<pVector.size(); ii++)
+    {
+        pVector[ii]->draw_integration();
+    }
+}
+
 /*
 ----------------------------------------------------------------------
 relates mouse movements to particle toy construction
@@ -373,10 +384,10 @@ static void idle_func ( void )
     clear_forces();
 
 	if ( dsim ) {
-      handle_mouse();
-      apply_forces();
-      apply_constraints();
-	    simulation_step( pVector, dt );
+        handle_mouse();
+        apply_forces();
+        apply_constraints();
+        simulation_step( pVector, dt );
 	}
 	else {
 	    get_from_UI();
@@ -394,6 +405,11 @@ static void display_func ( void )
 	draw_forces();
 	draw_constraints();
 	draw_particles();
+
+	if (dsim) {
+        draw_integration_schemes();
+	}
+
 	if (hold) {
 	    mouseParticle->draw();
 	    mouseForce->draw();

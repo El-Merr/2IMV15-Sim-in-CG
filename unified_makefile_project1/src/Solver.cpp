@@ -12,9 +12,9 @@ void simulation_step( std::vector<Particle*> pVector, float dt )
 	{
         pVector[ii]->compute_velocity();
         pVector[ii]->m_Velocity = DAMP*pVector[ii]->m_Velocity;
+        pVector[ii]->compute_integration(dt);
 		pVector[ii]->m_Position += dt*pVector[ii]->m_Velocity;
-
 	}
-//    printf("%f \n",dt*pVector[0]->m_Velocity[1]);
+//    printf("%f \n",dt);
 }
 

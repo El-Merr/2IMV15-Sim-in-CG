@@ -10,10 +10,6 @@ SpringForce::SpringForce(Particle *p1, Particle *p2, double dist, double ks, dou
   m_p1(p1), m_p2(p2), m_dist(dist), m_ks(ks), m_kd(kd) {
 }
 
-//SpringForce::SpringForce(MouseParticle *p1, Particle * p2, double dist, double ks, double kd) :
-//  m_mousep1(p1), m_p2(p2), m_dist(dist), m_ks(ks), m_kd(kd) {
-//}
-
 /**
  * Applies spring force between two points.
  */
