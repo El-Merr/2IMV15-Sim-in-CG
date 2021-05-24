@@ -58,32 +58,99 @@ void Particle::compute_velocity() {
     m_Velocity[1] = std::min(m_Velocity[1], 0.1f);
 }
 
-void Particle::compute_integration(float dt) {
-    if (m_Counter <= 0.0) {
-        m_Counter = H;
-        Vec2f dest = m_Position + H * m_Velocity;
-        m_Integration.push_back(dest);
-        if (m_Integration.size() > MAX_SIZE) {
-            m_Integration.erase(m_Integration.begin());
-        }
+/**
+ * Computes the numerical integration.
+ * @param dt        The time step size of the simulation.
+ * @param scheme    An integer denoting the integration scheme.
+ */
+void Particle::compute_integration(float dt, int scheme) {
+
+    switch(scheme) {
+        case 0: // Euler
+            if (m_Counter <= 0.0) {
+                m_Counter = H;
+                compute_euler();
+            }
+            break;
+        case 1: // Mid-point
+            compute_midpoint();
+            break;
+        case 2: // Runge-Kutta 4
+            compute_rungekutta();
+            break;
+    }
+
+    // Limit the number of integration lines to avoid cluttering.
+//    if (m_Integration.size() > MAX_SIZE) {
+//        m_Integration.erase(m_Integration.begin());
+//    }
 //        printf("pos: %f %f\n", m_Position[0], m_Position[1]);
 //        printf("vel: %f %f\n", m_Velocity[0], m_Velocity[1]);
 //        printf("dest: %f %f\n", dest[0], dest[1]);
-    }
     m_Counter -= dt;
 }
 
+/**
+ * Computes the Euler step.
+ */
+void Particle::compute_euler() {
+    Vec2f dest = m_Position + H * m_Velocity;
+    m_Integration[0] = m_Position;
+    m_Integration[1] = dest;
+}
+
+/**
+ * Computes the mid-point step.
+ */
+void Particle::compute_midpoint() {
+    Vec2f dest = m_Position + H * m_Velocity;
+    m_Integration.push_back(dest);
+}
+
+/**
+ * Computes the Runge-Kutta 4 step.
+ */
+void Particle::compute_rungekutta() {
+
+}
+
+/**
+ * Draws integration scheme lines.
+ */
 void Particle::draw_integration() {
-    if (m_Counter <= 0.0) {
-        for (int i = 1; i < m_Integration.size(); i++) {
-            glBegin(GL_LINES);
-            glColor3f(1.0, 1.0, 0.0);
-            glVertex2f(m_Integration[i - 1][0], m_Integration[i - 1][1]);
-            glColor3f(1.0, 1.0, 0.0);
-            glVertex2f(m_Integration[i][0], m_Integration[i][1]);
-            glEnd();
-        }
-    }
+//    for (int i = 1; i < m_Integration.size(); i++) {
+//        glBegin(GL_LINES);
+//        glColor3f(1.0, 1.0, 0.0);
+//        glVertex2f(m_Integration[i - 1][0], m_Integration[i - 1][1]);
+//        glColor3f(1.0, 1.0, 0.0);
+//        glVertex2f(m_Integration[i][0], m_Integration[i][1]);
+//        glEnd();
+//    }
+    const float dx = m_Integration[1][0] - m_Integration[0][0];
+    const float dy = m_Integration[1][1] - m_Integration[0][1];
+    const double arrow_dist = 0.3;
+
+    glBegin(GL_LINES);
+    glColor3f(1.0, 1.0, 0.0);
+    glVertex2f(m_Integration[0][0], m_Integration[0][1]);
+    glColor3f(1.0, 1.0, 0.0);
+    glVertex2f(m_Integration[1][0], m_Integration[1][1]);
+    glEnd();
+
+    // arrowhead right
+    glBegin( GL_LINES );
+    glColor3f(1.0, 1.0, 0.0);
+    glVertex2f( m_Integration[1][0], m_Integration[1][1] );
+    glColor3f(1.0, 1.0, 0.0);
+    glVertex2f( m_Integration[1][0] - arrow_dist * (dx + dy), m_Integration[1][1] - arrow_dist * (dy - dx));
+    glEnd();
+    // arrowhead left
+    glBegin( GL_LINES );
+    glColor3f(1.0, 1.0, 0.0);
+    glVertex2f( m_Integration[1][0], m_Integration[1][1] );
+    glColor3f(1.0, 1.0, 0.0);
+    glVertex2f( m_Integration[1][0] - arrow_dist * (dx - dy), m_Integration[1][1] - arrow_dist * (dy + dx));
+    glEnd();
 }
 
 void Particle::draw()

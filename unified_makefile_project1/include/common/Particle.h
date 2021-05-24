@@ -3,8 +3,8 @@
 #include <gfx/vec2.h>
 #include <vector>
 
-#define H 1.0f
-#define MAX_SIZE 50
+#define H 5.0f
+//#define MAX_SIZE 2
 
 class Particle
 {
@@ -21,7 +21,10 @@ public:
 	void set_state(Vec2f pos, Vec2f vel);
 	std::vector<Vec2f> derive_eval();
     void compute_velocity();
-    void compute_integration(float dt);
+    void compute_integration(float dt, int scheme);
+    void compute_euler();
+    void compute_midpoint();
+    void compute_rungekutta();
 	Vec2f m_ConstructPos;
 	Vec2f m_Position;
 	Vec2f m_Velocity;
