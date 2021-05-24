@@ -10,12 +10,12 @@
 
 class Wall {
 public:
-    Wall(float x1, float y1, float x2, float y2);
+    Wall(const Vec2f & start, const Vec2f & end);
     virtual ~Wall(void);
     void draw();
     void detectCollision(std::vector<Particle*> pVector);
 private:
-    Vec2f m_start;
-    Vec2f m_end;
+    Vec2f const m_start;
+    Vec2f const m_end;
 };
 

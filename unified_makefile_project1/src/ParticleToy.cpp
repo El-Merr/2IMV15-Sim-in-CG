@@ -216,7 +216,7 @@ static void init_system(int sceneNr)
             }
             int size = pVector.size();
 
-            wall = new Wall(-0.4, -0.2, 0.4, 0.2);
+            wall = new Wall(Vec2f(-0.6, -0.6), Vec2f(0.6, -0.6));
             //wall->draw();
 
             for (int ii = 0; ii < size - 1; ii++) {
@@ -242,11 +242,9 @@ static void init_system(int sceneNr)
             case 3: {//single particle and wall
                 mouse_particle_index = 0;
 
-                pVector.push_back(new Particle(center, 0.001));
+                pVector.push_back(new Particle(center, 0.01));
 
-                wall = new Wall(-0.4, -0.2, 0.4, 0.2);
-                //wall->draw();
-
+                wall = new Wall(Vec2f(-0.6, -0.6), Vec2f(0.6, -0.6));
 
                 break;
         }
@@ -348,7 +346,9 @@ static void draw_constraints ( void )
 	for (int ii; ii < constraints.size(); ii++) {
 	    constraints[ii]->draw();
 	}
-    wall->draw();
+	if (wall) {
+        wall->draw();
+    }
 }
 
 /*
