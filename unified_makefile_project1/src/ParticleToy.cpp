@@ -179,8 +179,8 @@ static void init_system(int sceneNr)
 
             mouse_particle_index = 1; // sets the 2nd particle to be the mouse interaction particle.
 
-            springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, 0.001, 0.00001));
-            rodConstraint = new RodConstraint(pVector[1], pVector[2], dist);
+            springForce.push_back(new SpringForce(pVector[1], pVector[2], dist, 0.001, 0.00001));
+            rodConstraint = new RodConstraint(pVector[0], pVector[1], dist);
             circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
 
             constraints.push_back(circularWireConstraint);
@@ -304,7 +304,7 @@ static void apply_forces ( void )
 
 static void draw_constraints ( void )
 {
-	for (int ii; ii < constraints.size(); ii++) {
+	for (int ii=0; ii < constraints.size(); ii++) {
 	    constraints[ii]->draw();
 	}
 }

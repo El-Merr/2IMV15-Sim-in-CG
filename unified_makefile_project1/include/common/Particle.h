@@ -4,7 +4,7 @@
 #include <vector>
 
 #define H 1.0f
-#define MAX_SIZE 20
+#define MAX_SIZE 50
 
 class Particle
 {
@@ -27,4 +27,6 @@ public:
 	Vec2f m_Velocity;
 	Vec2f m_Force;
 	float m_Mass;
+    std::vector<Vec2f> m_Integration;
+    int m_Counter;
 };

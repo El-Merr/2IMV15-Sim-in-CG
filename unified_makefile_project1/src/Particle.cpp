@@ -2,14 +2,15 @@
 #include <vector>
 #include <GL/glut.h>
 
-static std::vector<Vec2f> integration;
-static float counter;
+//static std::vector<Vec2f> integration;
+//static float counter;
 
 Particle::Particle(const Vec2f & ConstructPos, float mass) :
 	m_ConstructPos(ConstructPos), m_Position(ConstructPos),
-	m_Velocity(Vec2f(0.0, 0.0)), m_Force(Vec2f(0.0, 0.0)), m_Mass(mass)
+	m_Velocity(Vec2f(0.0, 0.0)), m_Force(Vec2f(0.0, 0.0)), m_Mass(mass),
+	m_Integration(std::vector<Vec2f>()), m_Counter(0)
 {
-    integration.push_back(ConstructPos);
+    m_Integration.push_back(ConstructPos);
 }
 
 Particle::~Particle(void)
@@ -22,8 +23,8 @@ void Particle::reset()
 	m_Velocity = Vec2f(0.0, 0.0);
 	m_Force = Vec2f(0.0, 0.0);
 	m_Mass = 0.01;
-	integration.clear();
-	counter = 0;
+	m_Integration.clear();
+	m_Counter = 0;
 }
 
 void Particle::clear_force()
@@ -58,28 +59,30 @@ void Particle::compute_velocity() {
 }
 
 void Particle::compute_integration(float dt) {
-    if (counter <= 0.0) {
-        counter = H;
+    if (m_Counter <= 0.0) {
+        m_Counter = H;
         Vec2f dest = m_Position + H * m_Velocity;
-        integration.push_back(dest);
-        if (integration.size() > MAX_SIZE) {
-            integration.erase(integration.begin());
+        m_Integration.push_back(dest);
+        if (m_Integration.size() > MAX_SIZE) {
+            m_Integration.erase(m_Integration.begin());
         }
 //        printf("pos: %f %f\n", m_Position[0], m_Position[1]);
 //        printf("vel: %f %f\n", m_Velocity[0], m_Velocity[1]);
 //        printf("dest: %f %f\n", dest[0], dest[1]);
     }
-    counter -= dt;
+    m_Counter -= dt;
 }
 
 void Particle::draw_integration() {
-    for (int i = 1; i<integration.size(); i++) {
-        glBegin( GL_LINES );
-        glColor3f(1.0, 1.0, 0.0);
-        glVertex2f(integration[i-1][0], integration[i-1][1]);
-        glColor3f(1.0, 1.0, 0.0);
-        glVertex2f(integration[i][0], integration[i][1]);
-        glEnd();
+    if (m_Counter <= 0.0) {
+        for (int i = 1; i < m_Integration.size(); i++) {
+            glBegin(GL_LINES);
+            glColor3f(1.0, 1.0, 0.0);
+            glVertex2f(m_Integration[i - 1][0], m_Integration[i - 1][1]);
+            glColor3f(1.0, 1.0, 0.0);
+            glVertex2f(m_Integration[i][0], m_Integration[i][1]);
+            glEnd();
+        }
     }
 }
 
