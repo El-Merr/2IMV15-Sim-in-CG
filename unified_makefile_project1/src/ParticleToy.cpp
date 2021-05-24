@@ -122,9 +122,31 @@ void handle_mouse() {
     if (mouse_down[0]) {
         // when left mouse button is pressed and held, a spring force is applied between it and a given particle
         if (!hold) {
-//            printf("make particle\n");
-            mouseParticle = new Particle(Vec2f(x, y), 0);
-            mouseForce = new SpringForce(mouseParticle, pVector[mouse_particle_index], 0.6, 0.00004, 0.0000001);
+            // try to find a particle to drag, otherwise there is no particle in the scene
+            try {
+                // create a particle at the mouse position
+                mouseParticle = new Particle(Vec2f(x, y), 0);
+
+                // find the particle in pVector that is closest to the mouse
+                Particle* dragParticle = pVector[0];
+                float dist = sqrt( pow(mouseParticle->m_Position[0] - pVector[0]->m_Position[0], 2)
+                                   + pow(mouseParticle->m_Position[1] - pVector[0]->m_Position[1], 2) );
+                float new_dist = 0;
+                for ( auto p : pVector ) {
+                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - p->m_Position[0], 2)
+                                     + pow(mouseParticle->m_Position[1] - p->m_Position[1], 2) );
+                    if (new_dist < dist) {
+                        dist = new_dist;
+                        dragParticle = p;
+                    }
+                }
+
+                // create springforce between mouse and closest particle
+                mouseForce = new SpringForce(mouseParticle, dragParticle, 0.6, 0.00004, 0.0000001);
+            } catch (...) {
+                printf("There is no particle to drag");
+            }
+
         }
         hold = true;
         mouseParticle->set_state(Vec2f(x, y), Vec2f(0.0, 0.0));
