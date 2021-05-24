@@ -29,6 +29,10 @@ static int dump_frames;
 static int frame_number;
 static int mouse_particle_index;
 
+// spring constants
+static float spring_ks = 0.001;
+static float spring_kd = 0.00001;
+
 // static Particle *pList;
 static std::vector<Particle*> pVector;
 
@@ -179,7 +183,7 @@ static void init_system(int sceneNr)
 
             mouse_particle_index = 1; // sets the 2nd particle to be the mouse interaction particle.
 
-            springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, 0.001, 0.00001));
+            springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, spring_ks, spring_kd));
             rodConstraint = new RodConstraint(pVector[1], pVector[2], dist);
             circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
 
@@ -202,10 +206,10 @@ static void init_system(int sceneNr)
 
             for(int ii=0; ii < size - 1; ii++) {
                 if ((ii + 1) % 5 != 0) {
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist*2, 0.001, 0.00001));
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist*2, spring_ks, spring_kd));
                 }
                 if (ii < 20 ) {
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist*2, 0.001, 0.00001));
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist*2, spring_ks, spring_kd));
                 }
                 circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-3 * dist, 5 * dist), dist);
                 auto circularWireConstraint2 = new CircularWireConstraint(pVector[24], center + Vec2f(3 * dist, 5 * dist), dist);
