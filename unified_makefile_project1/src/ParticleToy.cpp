@@ -21,7 +21,7 @@
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> pVector, float dt);
+extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slomoBool);
 /* global variables */
 
 static int N;
@@ -41,6 +41,7 @@ static int mouse_release[3];
 static int mouse_shiftclick[3];
 static int omx, omy, mx, my;
 static int hmx, hmy;
+bool slomo = false;
 
 static std::vector<Constraint*> constraints;
 static ConstraintSolver* constraintSolver = NULL;
@@ -49,6 +50,7 @@ static std::vector<SpringForce*> springForce;
 static RodConstraint * rodConstraint = NULL;
 static CircularWireConstraint * circularWireConstraint = NULL;
 static GravityForce * gravityForce = NULL;
+
 
 Particle* mouseParticle = NULL;
 SpringForce* mouseForce = NULL;
@@ -223,7 +225,7 @@ static void init_system(int sceneNr)
                 }
                 if (ii < 20) {
                     if ((ii + 1) % 5 == 0) {
-                        constraints.push_back(new RodConstraint(pVector[ii], pVector[ii+5], dist));
+                        constraints.push_back(new RodConstraint(pVector[ii], pVector[ii + 5], dist));
                     }
                     springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist * 2, 0.001, 0.00001));
                 }
@@ -236,6 +238,17 @@ static void init_system(int sceneNr)
                 constraintSolver = new ConstraintSolver(pVector, constraints);
             }
             break;
+        }
+            case 3: {//single particle and wall
+                mouse_particle_index = 0;
+
+                pVector.push_back(new Particle(center, 0.001));
+
+                wall = new Wall(-0.4, -0.2, 0.4, 0.2);
+                //wall->draw();
+
+
+                break;
         }
     }
     gravityForce = new GravityForce(pVector);
@@ -323,6 +336,10 @@ static void apply_forces ( void )
 
     if (hold) {
         mouseForce->apply_spring();
+    }
+
+    if (wall) {
+        wall->detectCollision(pVector);
     }
 }
 
@@ -423,9 +440,18 @@ static void key_func ( unsigned char key, int x, int y )
             free_data();
             init_system(1);
             break;
+
 	    case '3':
             free_data();
             init_system(2);
+            break;
+
+        case '4':
+            free_data();
+            init_system(3);
+            break;
+	    case 's': //slomo mode
+            slomo = !slomo;
             break;
     }
 }
@@ -464,7 +490,7 @@ static void idle_func ( void )
       handle_mouse();
       apply_forces();
       apply_constraints();
-	    simulation_step( pVector, dt );
+	    simulation_step( pVector, dt, slomo );
 	}
 	else {
 	    get_from_UI();
