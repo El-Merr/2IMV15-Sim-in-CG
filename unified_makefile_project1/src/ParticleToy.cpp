@@ -249,7 +249,6 @@ static void init_system(int sceneNr)
                 constraints.push_back(new RailConstraint(pVector[i], rail_start, rail_end, rail_dist));
             }
             constraintSolver = new ConstraintSolver(pVector, constraints);
-            }
             break;
         }
         case 2: {//cloth scene
