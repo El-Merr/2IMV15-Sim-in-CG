@@ -15,7 +15,7 @@ class GravityForce {
 
     private:
 
-        std::vector<Particle*> const m_pVec;
+        std::vector<Particle*> const m_pVec;   // particle
 
         void draw_arrow(Particle *p, float g);
 };

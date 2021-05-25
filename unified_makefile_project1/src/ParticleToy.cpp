@@ -22,7 +22,7 @@
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slomoBool);
+extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slomoBool, int scheme );
 /* global variables */
 
 static int N;
@@ -31,6 +31,7 @@ static int dsim;
 static int dump_frames;
 static int frame_number;
 static int mouse_particle_index;
+static int scheme;
 
 // spring constants
 static float spring_ks = 0.001;
@@ -92,7 +93,6 @@ static void free_data ( void )
         delete constraintSolver;
         constraintSolver = NULL;
     }
-
     if (railConstraint) {
         delete railConstraint;
         railConstraint = NULL;
@@ -213,7 +213,7 @@ static void init_system(int sceneNr)
             break;
         }
 
-        case 1: {//cloth scene
+        case 1: { //cloth scene
             int width = 5;
             int height = 6;
             Vec2f start_cloth = Vec2f(-2*dist, 2*dist);
@@ -250,6 +250,7 @@ static void init_system(int sceneNr)
             }
             constraintSolver = new ConstraintSolver(pVector, constraints);
             break;
+
         }
         case 2: {//cloth scene
             mouse_particle_index = 20;
@@ -393,11 +394,22 @@ static void apply_forces ( void )
 
 static void draw_constraints ( void )
 {
-	for (int ii; ii < constraints.size(); ii++) {
+	for (int ii=0; ii < constraints.size(); ii++) {
 	    constraints[ii]->draw();
 	}
 	if (wall) {
         wall->draw();
+    }
+}
+
+/**
+ * Draw the direction of the particles forces.
+ */
+static void draw_direction ( void )
+{
+    for(int ii=0; ii<pVector.size(); ii++)
+    {
+        pVector[ii]->draw_arrows();
     }
 }
 
@@ -541,10 +553,10 @@ static void idle_func ( void )
     clear_forces();
 
 	if ( dsim ) {
-      handle_mouse();
-      apply_forces();
-      apply_constraints();
-	    simulation_step( pVector, dt, slomo );
+        handle_mouse();
+        apply_forces();
+        apply_constraints();
+        simulation_step( pVector, dt, slomo, scheme );
 	}
 	else {
 	    get_from_UI();
@@ -562,6 +574,11 @@ static void display_func ( void )
 	draw_forces();
 	draw_constraints();
 	draw_particles();
+
+	if (dsim) {
+        draw_direction();
+	}
+
 	if (hold) {
 	    mouseParticle->draw();
 	    mouseForce->draw();
@@ -635,7 +652,8 @@ int main ( int argc, char ** argv )
 	dsim = 0;
 	dump_frames = 0;
 	frame_number = 0;
-	
+	scheme = 0;
+
 	init_system(0);
 	
 	win_x = 800;
