@@ -4,11 +4,13 @@
 #include "Particle.h"
 #include "SpringForce.h"
 #include "RodConstraint.h"
+#include "RailConstraint.h"
 #include "CircularWireConstraint.h"
 #include "GravityForce.h"
 #include "imageio.h"
 #include "Constraint.h"
 #include "ConstraintSolver.h"
+#include "Wall.h"
 
 #include <vector>
 #include <stdlib.h>
@@ -16,10 +18,11 @@
 #include <GL/glut.h>
 #include <iostream>
 
+
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> pVector, float dt, int scheme );
+extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slomoBool, int scheme );
 /* global variables */
 
 static int N;
@@ -29,6 +32,10 @@ static int dump_frames;
 static int frame_number;
 static int mouse_particle_index;
 static int scheme;
+
+// spring constants
+static float spring_ks = 0.001;
+static float spring_kd = 0.00001;
 
 // static Particle *pList;
 static std::vector<Particle*> pVector;
@@ -40,6 +47,8 @@ static int mouse_release[3];
 static int mouse_shiftclick[3];
 static int omx, omy, mx, my;
 static int hmx, hmy;
+bool slomo = false;
+bool gravityArrows = false;
 
 static std::vector<Constraint*> constraints;
 static ConstraintSolver* constraintSolver = NULL;
@@ -48,9 +57,12 @@ static std::vector<SpringForce*> springForce;
 static RodConstraint * rodConstraint = NULL;
 static CircularWireConstraint * circularWireConstraint = NULL;
 static GravityForce * gravityForce = NULL;
+static RailConstraint* railConstraint = NULL;
+
 
 Particle* mouseParticle = NULL;
 SpringForce* mouseForce = NULL;
+Wall* wall = NULL;
 
 bool hold = false; //is the mouse held down?
 
@@ -80,6 +92,15 @@ static void free_data ( void )
     if (constraintSolver) {
         delete constraintSolver;
         constraintSolver = NULL;
+    }
+
+    if (railConstraint) {
+        delete railConstraint;
+        railConstraint = NULL;
+
+    if (wall) {
+        delete wall;
+        wall = NULL;
     }
 }
 
@@ -171,7 +192,7 @@ static void init_system(int sceneNr)
 	float defaultMass = 0.01;
 
 	switch(sceneNr) {
-        case 0: //default scene
+        case 0: {//default scene
             // Create three particles, attach them to each other, then add a
             // circular wire constraint to the first.
             pVector.push_back(new Particle(center + offset, defaultMass));
@@ -180,40 +201,103 @@ static void init_system(int sceneNr)
 
             mouse_particle_index = 1; // sets the 2nd particle to be the mouse interaction particle.
 
-            springForce.push_back(new SpringForce(pVector[1], pVector[2], dist, 0.06, 0.004));
-            rodConstraint = new RodConstraint(pVector[0], pVector[1], dist);
+            springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, spring_ks, spring_kd));
+
+            // constraints
+            rodConstraint = new RodConstraint(pVector[1], pVector[2], dist);
             circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
 
             constraints.push_back(circularWireConstraint);
-			constraints.push_back(rodConstraint);
+            constraints.push_back(rodConstraint);
             constraintSolver = new ConstraintSolver(pVector, constraints);
 
             break;
+        }
 
         case 1: //cloth scene
+            int width = 5;
+            int height = 6;
+            Vec2f start_cloth = Vec2f(-2*dist, 2*dist);
+            Vec2f r_offset = Vec2f(0.0, dist);
+            // particle grid
+            for (int r = 0; r < height; r++) {
+                for (int c = 0; c < width; c++) {
+                    pVector.push_back(new Particle((start_cloth - r_offset*r + offset*c), 0.001));
+                }
+            }
+            int size = pVector.size();
+
+            // add spring forces between neighbours
+            for(int ii=0; ii < size - 1; ii++) {
+                // if particle not in last column
+                if ( (ii+1) % (width) != 0 ) {
+                    // connect with particle on the right
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist*2, spring_ks, spring_kd));
+                }
+
+                // if particle not on the bottom row
+                if (ii < size - width ) {
+                    // connect with particle below
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + width], dist*2, spring_ks, spring_kd));
+                }
+            }
+
+            // hang the cloth on the rail
+            const double rail_dist = 0.1;
+            const Vec2f rail_start = Vec2f(-0.8, pVector[0]->m_Position[1]+rail_dist);
+            const Vec2f rail_end = Vec2f(0.8, pVector[0]->m_Position[1]+rail_dist);
+            for (int i=0; i < width; i++) {
+                constraints.push_back(new RailConstraint(pVector[i], rail_start, rail_end, rail_dist));
+            }
+            constraintSolver = new ConstraintSolver(pVector, constraints);
+            }
+            break;
+        }
+        case 2: {//cloth scene
             mouse_particle_index = 20;
 
             for (int i = 0; i < 5; i++) {
                 for (int j = 0; j < 5; j++) {
                     pVector.push_back(new Particle(center - 2 * offset +
-                        Vec2f(i * dist, j * dist), 0.001));
+                                                   Vec2f(i * dist, j * dist), 0.001));
                 }
             }
             int size = pVector.size();
 
-            for(int ii=0; ii < size - 1; ii++) {
+            wall = new Wall(Vec2f(-0.6, -0.6), Vec2f(0.6, -0.6));
+            //wall->draw();
+
+            for (int ii = 0; ii < size - 1; ii++) {
                 if ((ii + 1) % 5 != 0) {
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist*2, 0.001, 0.00001));
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist * 1.5, 0.001, 0.00001));
                 }
-                if (ii < 20 ) {
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist*2, 0.001, 0.00001));
+                if (ii < 20) {
+                    if ((ii + 1) % 5 == 0) {
+                        constraints.push_back(new RodConstraint(pVector[ii], pVector[ii + 5], dist));
+                    }
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist * 2, 0.001, 0.00001));
                 }
-                circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-3 * dist, 5 * dist), dist);
-                auto circularWireConstraint2 = new CircularWireConstraint(pVector[24], center + Vec2f(3 * dist, 5 * dist), dist);
-                constraints.push_back(circularWireConstraint);
-                constraints.push_back(circularWireConstraint2);
+                //circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-2.5 * dist, 4.5 * dist), 0.1);
+                //auto circularWireConstraint2 = new CircularWireConstraint(pVector[24], center + Vec2f(2.5 * dist, 4.5 * dist), 0.1);
+
+                //auto rodConstraint2 = new RodConstraint(pVector[4], pVector[24], 4 * dist);
+                //constraints.push_back(circularWireConstraint);
+                //constraints.push_back(circularWireConstraint2);
                 constraintSolver = new ConstraintSolver(pVector, constraints);
             }
+            break;
+        }
+            case 3: {//single particle and wall
+                mouse_particle_index = 0;
+
+                pVector.push_back(new Particle(center + Vec2f(2*dist, 0.0), 0.001));
+                pVector.push_back(new Particle(center - Vec2f(2*dist, 0.1), 0.001));
+                pVector[1]->m_Velocity = Vec2f(0.4, 0);
+
+                wall = new Wall(Vec2f(-0.6, -0.6), Vec2f(0.6, -0.6));
+
+                break;
+        }
     }
     gravityForce = new GravityForce(pVector);
 }
@@ -283,8 +367,10 @@ static void draw_forces ( void )
     {
         springForce[spring]->draw();
     }
-	if (gravityForce)
-	    gravityForce->draw();
+	if (gravityForce) {
+        gravityForce->drawArrows = gravityArrows;
+        gravityForce->draw();
+    }
 }
 
 static void apply_forces ( void )
@@ -301,6 +387,10 @@ static void apply_forces ( void )
     if (hold) {
         mouseForce->apply_spring();
     }
+
+    if (wall) {
+        wall->detectCollision(pVector);
+    }
 }
 
 static void draw_constraints ( void )
@@ -308,6 +398,9 @@ static void draw_constraints ( void )
 	for (int ii=0; ii < constraints.size(); ii++) {
 	    constraints[ii]->draw();
 	}
+	if (wall) {
+        wall->draw();
+    }
 }
 
 /**
@@ -396,6 +489,10 @@ static void key_func ( unsigned char key, int x, int y )
             free_data();
             exit(0);
             break;
+	    case 'g':
+        case 'G':
+	        gravityArrows = !gravityArrows;
+	        break;
 
         case ' ':
             dsim = !dsim;
@@ -409,6 +506,19 @@ static void key_func ( unsigned char key, int x, int y )
         case '2':
             free_data();
             init_system(1);
+            break;
+
+	    case '3':
+            free_data();
+            init_system(2);
+            break;
+
+        case '4':
+            free_data();
+            init_system(3);
+            break;
+	    case 's': //slomo mode
+            slomo = !slomo;
             break;
     }
 }
@@ -447,7 +557,7 @@ static void idle_func ( void )
         handle_mouse();
         apply_forces();
         apply_constraints();
-        simulation_step( pVector, dt, scheme );
+        simulation_step( pVector, dt, slomo, scheme );
 	}
 	else {
 	    get_from_UI();

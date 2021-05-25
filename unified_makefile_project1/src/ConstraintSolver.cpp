@@ -70,7 +70,10 @@ void ConstraintSolver::apply_constraint()
     VectorXf Jdq = -1 * J_deriv * q;
     VectorXf JWQ = JW * Q;
 
-    VectorXf JWJt_lambda = Jdq - JWQ - C - C_deriv;
+    VectorXf ksC = 5.0 * C;
+    VectorXf kdC_deriv = 0.1 * C_deriv;
+
+    VectorXf JWJt_lambda = Jdq - JWQ - ksC - kdC_deriv;
 
     // use linear Conjugate Gradient to solve x for Ax=b
     // where JWJt * lambda = JWJt_lambda

@@ -12,8 +12,7 @@ Particle::Particle(const Vec2f & ConstructPos, float mass) :
 }
 
 Particle::~Particle(void)
-{
-}
+{}
 
 void Particle::reset()
 {
