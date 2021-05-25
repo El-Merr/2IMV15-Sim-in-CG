@@ -242,7 +242,9 @@ static void init_system(int sceneNr)
             case 3: {//single particle and wall
                 mouse_particle_index = 0;
 
-                pVector.push_back(new Particle(center, 0.01));
+                pVector.push_back(new Particle(center + Vec2f(2*dist, 0.0), 0.001));
+                pVector.push_back(new Particle(center - Vec2f(2*dist, 0.1), 0.001));
+                pVector[1]->m_Velocity = Vec2f(0.4, 0);
 
                 wall = new Wall(Vec2f(-0.6, -0.6), Vec2f(0.6, -0.6));
 
