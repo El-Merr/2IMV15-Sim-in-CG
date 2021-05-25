@@ -44,13 +44,14 @@ void compute_rungekutta(Particle* p, float dt) {
  * @param scheme    An integer denoting the integration scheme.
  */
 void simulation_step( std::vector<Particle*> pVector, float dt, bool slomo, int scheme ) {
+    if (slomo) {
+        dt = dt / 3;
+    }
+
     for (int ii = 0; ii < pVector.size(); ii++) {
         switch (scheme) {
             case 0: // Euler
                 compute_euler(pVector[ii], dt);
-                if (slomo) {
-                    pVector[ii]->m_Velocity = Vec2f(pVector[ii]->m_Velocity[0] / 3, pVector[ii]->m_Velocity[1] / 3);
-                }
                 break;
             case 1: // Mid-point
                 compute_midpoint(pVector[ii], dt);
