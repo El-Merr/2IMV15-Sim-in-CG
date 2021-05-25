@@ -209,7 +209,7 @@ static void init_system(int sceneNr)
             // particle grid
             for (int r = 0; r < height; r++) {
                 for (int c = 0; c < width; c++) {
-                    pVector.push_back(new Particle((start_cloth - r_offset*r + offset*c), defaultMass));
+                    pVector.push_back(new Particle((start_cloth - r_offset*r + offset*c), 0.001));
                 }
             }
             int size = pVector.size();
