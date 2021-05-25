@@ -96,7 +96,7 @@ static void free_data ( void )
     if (railConstraint) {
         delete railConstraint;
         railConstraint = NULL;
-
+    }
     if (wall) {
         delete wall;
         wall = NULL;
@@ -213,7 +213,7 @@ static void init_system(int sceneNr)
             break;
         }
 
-        case 1: //cloth scene
+        case 1: {//cloth scene
             int width = 5;
             int height = 6;
             Vec2f start_cloth = Vec2f(-2*dist, 2*dist);
@@ -249,7 +249,6 @@ static void init_system(int sceneNr)
                 constraints.push_back(new RailConstraint(pVector[i], rail_start, rail_end, rail_dist));
             }
             constraintSolver = new ConstraintSolver(pVector, constraints);
-            }
             break;
         }
         case 2: {//cloth scene
