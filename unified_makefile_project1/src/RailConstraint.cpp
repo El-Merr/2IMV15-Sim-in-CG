@@ -10,6 +10,8 @@ RailConstraint::RailConstraint(Particle* p, const Vec2f & start, const Vec2f & e
         m_p(p), m_start(start), m_end(end), m_dist(dist) {
 }
 
+RailConstraint::~RailConstraint(void) {}
+
 std::vector<Particle*> RailConstraint::getParticles()
 {
     std::vector<Particle*> particles;
