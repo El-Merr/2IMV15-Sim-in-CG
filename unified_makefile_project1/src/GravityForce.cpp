@@ -14,8 +14,9 @@ GravityForce::GravityForce(std::vector<Particle*> pVector) : m_pVec(pVector) {
     {
         m_Gravity.push_back(m_pVec[ii]->m_Mass * G);
     }
-
 }
+
+GravityForce::~GravityForce(void) {}
 
 void GravityForce::apply_gravity()
 {

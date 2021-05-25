@@ -5,6 +5,7 @@
 class SpringForce {
  public:
   SpringForce(Particle * p1, Particle * p2, double dist, double ks, double kd);
+  virtual ~SpringForce(void);
 
   void draw();
   void apply_spring();

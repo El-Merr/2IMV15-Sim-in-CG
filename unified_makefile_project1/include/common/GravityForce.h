@@ -7,14 +7,15 @@ class GravityForce {
 
     public:
         GravityForce(std::vector<Particle*> pVector);
+        virtual ~GravityForce(void);
+
         void draw();
         void apply_gravity();
         bool drawArrows;
 
     private:
 
-        std::vector<Particle*> const m_pVec;   // particle
-//        std::vector<float> m_Gravity;
+        std::vector<Particle*> const m_pVec;
 
         void draw_arrow(Particle *p, float g);
 };
