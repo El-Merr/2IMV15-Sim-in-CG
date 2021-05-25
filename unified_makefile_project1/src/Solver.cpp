@@ -43,9 +43,8 @@ void compute_rungekutta(Particle* p, float dt) {
  * @param dt        The time step size of the simulation.
  * @param scheme    An integer denoting the integration scheme.
  */
-void simulation_step( std::vector<Particle*> pVector, float dt, bool slomo, int scheme )
-{
-    for(int ii=0; ii<pVector.size(); ii++) {
+void simulation_step( std::vector<Particle*> pVector, float dt, bool slomo, int scheme ) {
+    for (int ii = 0; ii < pVector.size(); ii++) {
         switch (scheme) {
             case 0: // Euler
                 compute_euler(pVector[ii], dt);
@@ -61,4 +60,5 @@ void simulation_step( std::vector<Particle*> pVector, float dt, bool slomo, int 
                 break;
         }
     }
+}
 

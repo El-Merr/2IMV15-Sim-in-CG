@@ -19,7 +19,6 @@ void Particle::reset()
 	m_Position = m_ConstructPos;
 	m_Velocity = Vec2f(0.0, 0.0);
 	m_Force = Vec2f(0.0, 0.0);
-	m_Mass = 0.01;
 	m_Direction.clear();
 }
 
