@@ -14,6 +14,7 @@
 void compute_euler(Particle* p, float dt) {
     std::vector<Vec2f> old = p->get_state();
     std::vector<Vec2f> deriv = p->derive_eval();
+
     Vec2f position = old[0] + dt * deriv[0];
     Vec2f velocity = DAMP * (old[1] + dt * deriv[1]);
     p->set_state(position, velocity);
@@ -25,7 +26,20 @@ void compute_euler(Particle* p, float dt) {
  * @param dt    The time step size.
  */
 void compute_midpoint(Particle* p, float dt) {
+    std::vector<Vec2f> old = p->get_state();
+    // 1st order
+    std::vector<Vec2f> deriv = p->derive_eval();
 
+    // 2nd order
+    Vec2f position = old[0] + 0.5f * dt * deriv[0];
+    Vec2f velocity = DAMP * (old[1] + 0.5f * dt * deriv[1]);
+    p->set_state(position, velocity);
+    deriv = p->derive_eval();
+
+    // Update step
+    position = old[0] + dt * deriv[0];
+    velocity = DAMP * (old[1] + dt * deriv[1]);
+    p->set_state(position, velocity);
 }
 
 /**
@@ -34,7 +48,32 @@ void compute_midpoint(Particle* p, float dt) {
  * @param dt    The time step size.
  */
 void compute_rungekutta(Particle* p, float dt) {
+    std::vector <Vec2f> old = p->get_state();
+    // 1st order
+    std::vector <Vec2f> deriv = p->derive_eval();
 
+    // 2nd order
+    Vec2f position = old[0] + 0.5f * dt * deriv[0];
+    Vec2f velocity = DAMP * (old[1] + 0.5f * dt * deriv[1]);
+    p->set_state(position, velocity);
+    deriv = p->derive_eval();
+
+    // 3rd order
+    position = old[0] + 0.5f * dt * deriv[0];
+    velocity = DAMP * (old[1] + 0.5f * dt * deriv[1]);
+    p->set_state(position, velocity);
+    deriv = p->derive_eval();
+
+    // 4th order
+    position = old[0] + 0.5f * dt * deriv[0];
+    velocity = DAMP * (old[1] + 0.5f * dt * deriv[1]);
+    p->set_state(position, velocity);
+    deriv = p->derive_eval();
+
+    // Update step
+    position = old[0] + dt * deriv[0];
+    velocity = DAMP * (old[1] + dt * deriv[1]);
+    p->set_state(position, velocity);
 }
 
 /**
