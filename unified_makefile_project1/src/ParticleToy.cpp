@@ -10,6 +10,7 @@
 #include "imageio.h"
 #include "Constraint.h"
 #include "ConstraintSolver.h"
+#include "Wall.h"
 
 #include <vector>
 #include <stdlib.h>
@@ -17,10 +18,11 @@
 #include <GL/glut.h>
 #include <iostream>
 
+
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> pVector, float dt);
+extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slomoBool);
 /* global variables */
 
 static int N;
@@ -44,6 +46,8 @@ static int mouse_release[3];
 static int mouse_shiftclick[3];
 static int omx, omy, mx, my;
 static int hmx, hmy;
+bool slomo = false;
+bool gravityArrows = false;
 
 static std::vector<Constraint*> constraints;
 static ConstraintSolver* constraintSolver = NULL;
@@ -54,8 +58,10 @@ static CircularWireConstraint * circularWireConstraint = NULL;
 static GravityForce * gravityForce = NULL;
 static RailConstraint* railConstraint = NULL;
 
+
 Particle* mouseParticle = NULL;
 SpringForce* mouseForce = NULL;
+Wall* wall = NULL;
 
 bool hold = false; //is the mouse held down?
 
@@ -86,9 +92,14 @@ static void free_data ( void )
         delete constraintSolver;
         constraintSolver = NULL;
     }
+
     if (railConstraint) {
         delete railConstraint;
         railConstraint = NULL;
+
+    if (wall) {
+        delete wall;
+        wall = NULL;
     }
 }
 
@@ -180,7 +191,7 @@ static void init_system(int sceneNr)
 	float defaultMass = 0.01;
 
 	switch(sceneNr) {
-        case 0: //default scene
+        case 0: {//default scene
             // Create three particles, attach them to each other, then add a
             // circular wire constraint to the first.
             pVector.push_back(new Particle(center + offset, defaultMass));
@@ -196,10 +207,11 @@ static void init_system(int sceneNr)
             circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
 
             constraints.push_back(circularWireConstraint);
-			constraints.push_back(rodConstraint);
+            constraints.push_back(rodConstraint);
             constraintSolver = new ConstraintSolver(pVector, constraints);
 
             break;
+        }
 
         case 1: //cloth scene
             int width = 5;
@@ -237,6 +249,54 @@ static void init_system(int sceneNr)
                 constraints.push_back(new RailConstraint(pVector[i], rail_start, rail_end, rail_dist));
             }
             constraintSolver = new ConstraintSolver(pVector, constraints);
+            }
+            break;
+        }
+        case 2: {//cloth scene
+            mouse_particle_index = 20;
+
+            for (int i = 0; i < 5; i++) {
+                for (int j = 0; j < 5; j++) {
+                    pVector.push_back(new Particle(center - 2 * offset +
+                                                   Vec2f(i * dist, j * dist), 0.001));
+                }
+            }
+            int size = pVector.size();
+
+            wall = new Wall(Vec2f(-0.6, -0.6), Vec2f(0.6, -0.6));
+            //wall->draw();
+
+            for (int ii = 0; ii < size - 1; ii++) {
+                if ((ii + 1) % 5 != 0) {
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist * 1.5, 0.001, 0.00001));
+                }
+                if (ii < 20) {
+                    if ((ii + 1) % 5 == 0) {
+                        constraints.push_back(new RodConstraint(pVector[ii], pVector[ii + 5], dist));
+                    }
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist * 2, 0.001, 0.00001));
+                }
+                //circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-2.5 * dist, 4.5 * dist), 0.1);
+                //auto circularWireConstraint2 = new CircularWireConstraint(pVector[24], center + Vec2f(2.5 * dist, 4.5 * dist), 0.1);
+
+                //auto rodConstraint2 = new RodConstraint(pVector[4], pVector[24], 4 * dist);
+                //constraints.push_back(circularWireConstraint);
+                //constraints.push_back(circularWireConstraint2);
+                constraintSolver = new ConstraintSolver(pVector, constraints);
+            }
+            break;
+        }
+            case 3: {//single particle and wall
+                mouse_particle_index = 0;
+
+                pVector.push_back(new Particle(center + Vec2f(2*dist, 0.0), 0.001));
+                pVector.push_back(new Particle(center - Vec2f(2*dist, 0.1), 0.001));
+                pVector[1]->m_Velocity = Vec2f(0.4, 0);
+
+                wall = new Wall(Vec2f(-0.6, -0.6), Vec2f(0.6, -0.6));
+
+                break;
+        }
     }
     gravityForce = new GravityForce(pVector);
 }
@@ -306,8 +366,10 @@ static void draw_forces ( void )
     {
         springForce[spring]->draw();
     }
-	if (gravityForce)
-	    gravityForce->draw();
+	if (gravityForce) {
+        gravityForce->drawArrows = gravityArrows;
+        gravityForce->draw();
+    }
 }
 
 static void apply_forces ( void )
@@ -324,6 +386,10 @@ static void apply_forces ( void )
     if (hold) {
         mouseForce->apply_spring();
     }
+
+    if (wall) {
+        wall->detectCollision(pVector);
+    }
 }
 
 static void draw_constraints ( void )
@@ -331,6 +397,9 @@ static void draw_constraints ( void )
 	for (int ii; ii < constraints.size(); ii++) {
 	    constraints[ii]->draw();
 	}
+	if (wall) {
+        wall->draw();
+    }
 }
 
 /*
@@ -408,6 +477,10 @@ static void key_func ( unsigned char key, int x, int y )
             free_data();
             exit(0);
             break;
+	    case 'g':
+        case 'G':
+	        gravityArrows = !gravityArrows;
+	        break;
 
         case ' ':
             dsim = !dsim;
@@ -421,6 +494,19 @@ static void key_func ( unsigned char key, int x, int y )
         case '2':
             free_data();
             init_system(1);
+            break;
+
+	    case '3':
+            free_data();
+            init_system(2);
+            break;
+
+        case '4':
+            free_data();
+            init_system(3);
+            break;
+	    case 's': //slomo mode
+            slomo = !slomo;
             break;
     }
 }
@@ -459,7 +545,7 @@ static void idle_func ( void )
       handle_mouse();
       apply_forces();
       apply_constraints();
-	    simulation_step( pVector, dt );
+	    simulation_step( pVector, dt, slomo );
 	}
 	else {
 	    get_from_UI();
