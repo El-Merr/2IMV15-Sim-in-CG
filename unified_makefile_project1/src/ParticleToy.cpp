@@ -519,7 +519,20 @@ static void key_func ( unsigned char key, int x, int y )
             init_system(3);
             break;
 	    case 's': //slomo mode
+        case 'S':
             slomo = !slomo;
+            break;
+        case 'e':
+        case 'E':
+            scheme = 0;
+            break;
+        case 'm':
+        case 'M':
+            scheme = 1;
+            break;
+        case 'r':
+        case 'R':
+            scheme = 2;
             break;
     }
 }
@@ -647,7 +660,19 @@ int main ( int argc, char ** argv )
 	}
 
 	printf ( "\n\nHow to use this application:\n\n" );
+
+    printf ( "To change scenes, use the number keys:\n\n" );
+    printf ( "\t TODO\n" );
+
+    printf ( "To change integration schemes:\n\n" );
+    printf ( "\t Switch to the Euler method with the 'e' key\n" );
+    printf ( "\t Switch to the Mid-point method with the 'm' key\n" );
+    printf ( "\t Switch to the Runge-Kutta 4 method with the 'r' key\n" );
+
+    printf ( "Other controls:\n\n" );
 	printf ( "\t Toggle construction/simulation display with the spacebar key\n" );
+    printf ( "\t Toggle slow-motion with the 's' key\n" );
+    printf ( "\t Reset the particles with the 'c' key\n" );
 	printf ( "\t Dump frames by pressing the 'd' key\n" );
 	printf ( "\t Quit by pressing the 'q' key\n" );
 
