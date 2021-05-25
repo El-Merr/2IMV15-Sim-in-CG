@@ -12,7 +12,7 @@ class RodConstraint : public Constraint {
  public:
   RodConstraint(Particle *p1, Particle * p2, double dist);
 
-  void draw();
+  void draw() override;
   std::vector<Particle*> getParticles() override;
 
     float constraint() override;

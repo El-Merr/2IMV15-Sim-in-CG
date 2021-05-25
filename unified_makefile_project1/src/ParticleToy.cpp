@@ -4,6 +4,7 @@
 #include "Particle.h"
 #include "SpringForce.h"
 #include "RodConstraint.h"
+#include "RailConstraint.h"
 #include "CircularWireConstraint.h"
 #include "GravityForce.h"
 #include "imageio.h"
@@ -51,6 +52,7 @@ static std::vector<SpringForce*> springForce;
 static RodConstraint * rodConstraint = NULL;
 static CircularWireConstraint * circularWireConstraint = NULL;
 static GravityForce * gravityForce = NULL;
+static RailConstraint* railConstraint = NULL;
 
 Particle* mouseParticle = NULL;
 SpringForce* mouseForce = NULL;
@@ -83,6 +85,10 @@ static void free_data ( void )
     if (constraintSolver) {
         delete constraintSolver;
         constraintSolver = NULL;
+    }
+    if (railConstraint) {
+        delete railConstraint;
+        railConstraint = NULL;
     }
 }
 
@@ -181,14 +187,21 @@ static void init_system(int sceneNr)
             pVector.push_back(new Particle(center + offset + offset, defaultMass));
             pVector.push_back(new Particle(center + offset + offset + offset, defaultMass));
 
+            pVector.push_back(new Particle(center - 3 * offset - Vec2f(0.0, 0.2), defaultMass));
+
             mouse_particle_index = 1; // sets the 2nd particle to be the mouse interaction particle.
 
             springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, spring_ks, spring_kd));
+
+            // constraints
             rodConstraint = new RodConstraint(pVector[1], pVector[2], dist);
             circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
 
+            railConstraint = new RailConstraint(pVector[3], center-3*offset, center+3*offset);
+
             constraints.push_back(circularWireConstraint);
 			constraints.push_back(rodConstraint);
+			constraints.push_back(railConstraint);
             constraintSolver = new ConstraintSolver(pVector, constraints);
 
             break;
