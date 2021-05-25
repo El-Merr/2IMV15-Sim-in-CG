@@ -19,7 +19,7 @@
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> pVector, float dt);
+extern void simulation_step( std::vector<Particle*> pVector, float dt, int scheme );
 /* global variables */
 
 static int N;
@@ -28,6 +28,7 @@ static int dsim;
 static int dump_frames;
 static int frame_number;
 static int mouse_particle_index;
+static int scheme;
 
 // static Particle *pList;
 static std::vector<Particle*> pVector;
@@ -179,7 +180,7 @@ static void init_system(int sceneNr)
 
             mouse_particle_index = 1; // sets the 2nd particle to be the mouse interaction particle.
 
-            springForce.push_back(new SpringForce(pVector[1], pVector[2], dist, 0.001, 0.00001));
+            springForce.push_back(new SpringForce(pVector[1], pVector[2], dist, 0.06, 0.004));
             rodConstraint = new RodConstraint(pVector[0], pVector[1], dist);
             circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
 
@@ -310,13 +311,13 @@ static void draw_constraints ( void )
 }
 
 /**
- * Draw selected numerical integration scheme.
+ * Draw the direction of the particles forces.
  */
-static void draw_integration_schemes ( void )
+static void draw_direction ( void )
 {
     for(int ii=0; ii<pVector.size(); ii++)
     {
-        pVector[ii]->draw_integration();
+        pVector[ii]->draw_arrows();
     }
 }
 
@@ -446,7 +447,7 @@ static void idle_func ( void )
         handle_mouse();
         apply_forces();
         apply_constraints();
-        simulation_step( pVector, dt );
+        simulation_step( pVector, dt, scheme );
 	}
 	else {
 	    get_from_UI();
@@ -466,7 +467,7 @@ static void display_func ( void )
 	draw_particles();
 
 	if (dsim) {
-        draw_integration_schemes();
+        draw_direction();
 	}
 
 	if (hold) {
@@ -542,7 +543,8 @@ int main ( int argc, char ** argv )
 	dsim = 0;
 	dump_frames = 0;
 	frame_number = 0;
-	
+	scheme = 0;
+
 	init_system(0);
 	
 	win_x = 800;
