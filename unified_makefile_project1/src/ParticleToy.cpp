@@ -187,8 +187,6 @@ static void init_system(int sceneNr)
             pVector.push_back(new Particle(center + offset + offset, defaultMass));
             pVector.push_back(new Particle(center + offset + offset + offset, defaultMass));
 
-            pVector.push_back(new Particle(center - 3 * offset - Vec2f(0.0, 0.2), defaultMass));
-
             mouse_particle_index = 1; // sets the 2nd particle to be the mouse interaction particle.
 
             springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, spring_ks, spring_kd));
@@ -197,39 +195,48 @@ static void init_system(int sceneNr)
             rodConstraint = new RodConstraint(pVector[1], pVector[2], dist);
             circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
 
-            railConstraint = new RailConstraint(pVector[3], center-3*offset, center+3*offset);
-
             constraints.push_back(circularWireConstraint);
 			constraints.push_back(rodConstraint);
-			constraints.push_back(railConstraint);
             constraintSolver = new ConstraintSolver(pVector, constraints);
 
             break;
 
         case 1: //cloth scene
-            mouse_particle_index = 20;
-
-            for (int i = 0; i < 5; i++) {
-                for (int j = 0; j < 5; j++) {
-                    pVector.push_back(new Particle(center - 2 * offset +
-                        Vec2f(i * dist, j * dist), 0.001));
+            int width = 5;
+            int height = 6;
+            Vec2f start_cloth = Vec2f(-2*dist, 2*dist);
+            Vec2f r_offset = Vec2f(0.0, dist);
+            // particle grid
+            for (int r = 0; r < height; r++) {
+                for (int c = 0; c < width; c++) {
+                    pVector.push_back(new Particle((start_cloth - r_offset*r + offset*c), defaultMass));
                 }
             }
             int size = pVector.size();
 
+            // add spring forces between neighbours
             for(int ii=0; ii < size - 1; ii++) {
-                if ((ii + 1) % 5 != 0) {
+                // if particle not in last column
+                if ( (ii+1) % (width) != 0 ) {
+                    // connect with particle on the right
                     springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist*2, spring_ks, spring_kd));
                 }
-                if (ii < 20 ) {
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist*2, spring_ks, spring_kd));
+
+                // if particle not on the bottom row
+                if (ii < size - width ) {
+                    // connect with particle below
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + width], dist*2, spring_ks, spring_kd));
                 }
-                circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-3 * dist, 5 * dist), dist);
-                auto circularWireConstraint2 = new CircularWireConstraint(pVector[24], center + Vec2f(3 * dist, 5 * dist), dist);
-                constraints.push_back(circularWireConstraint);
-                constraints.push_back(circularWireConstraint2);
-                constraintSolver = new ConstraintSolver(pVector, constraints);
             }
+
+            // hang the cloth on the rail
+            const double rail_dist = 0.1;
+            const Vec2f rail_start = Vec2f(-0.8, pVector[0]->m_Position[1]+rail_dist);
+            const Vec2f rail_end = Vec2f(0.8, pVector[0]->m_Position[1]+rail_dist);
+            for (int i=0; i < width; i++) {
+                constraints.push_back(new RailConstraint(pVector[i], rail_start, rail_end, rail_dist));
+            }
+            constraintSolver = new ConstraintSolver(pVector, constraints);
     }
     gravityForce = new GravityForce(pVector);
 }
