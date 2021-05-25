@@ -34,6 +34,7 @@ std::vector<Particle*> CircularWireConstraint::getParticles()
     return particles;
 }
 
+
 void CircularWireConstraint::draw()
 {
 	draw_circle(m_center, m_radius);
