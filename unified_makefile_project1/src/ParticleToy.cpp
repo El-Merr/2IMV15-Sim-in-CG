@@ -42,6 +42,7 @@ static int mouse_shiftclick[3];
 static int omx, omy, mx, my;
 static int hmx, hmy;
 bool slomo = false;
+bool gravityArrows = false;
 
 static std::vector<Constraint*> constraints;
 static ConstraintSolver* constraintSolver = NULL;
@@ -319,8 +320,10 @@ static void draw_forces ( void )
     {
         springForce[spring]->draw();
     }
-	if (gravityForce)
-	    gravityForce->draw();
+	if (gravityForce) {
+        gravityForce->drawArrows = gravityArrows;
+        gravityForce->draw();
+    }
 }
 
 static void apply_forces ( void )
@@ -428,6 +431,10 @@ static void key_func ( unsigned char key, int x, int y )
             free_data();
             exit(0);
             break;
+	    case 'g':
+        case 'G':
+	        gravityArrows = !gravityArrows;
+	        break;
 
         case ' ':
             dsim = !dsim;

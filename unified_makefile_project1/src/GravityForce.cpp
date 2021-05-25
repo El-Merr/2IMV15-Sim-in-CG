@@ -58,8 +58,9 @@ void GravityForce::draw_arrow(Particle* p, float g)
 void GravityForce::draw()
 {
     int size = m_pVec.size();
-    for(int ii=0; ii < size; ii++)
-    {
-        draw_arrow( m_pVec[ii], m_Gravity[ii] );
+    if (drawArrows) {
+        for (int ii = 0; ii < size; ii++) {
+            draw_arrow(m_pVec[ii], m_Gravity[ii]);
+        }
     }
 }

@@ -9,6 +9,7 @@ class GravityForce {
         GravityForce(std::vector<Particle*> pVector);
         void draw();
         void apply_gravity();
+        bool drawArrows;
 
     private:
 
