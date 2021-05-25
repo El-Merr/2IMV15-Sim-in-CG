@@ -16,7 +16,7 @@ using namespace Eigen;
 
 class RailConstraint : public Constraint {
 public:
-    RailConstraint(Particle* p, const Vec2f & start, const Vec2f & end);
+    RailConstraint(Particle* p, const Vec2f & start, const Vec2f & end, const double dist);
 
     void draw() override;
     std::vector<Particle*> getParticles() override;
@@ -32,6 +32,7 @@ private:
     Particle* const m_p;
     Vec2f const m_start;
     Vec2f const m_end;
+    double const m_dist;
 
     Vec2f get_rail_point();
 
