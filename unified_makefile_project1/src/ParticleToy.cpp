@@ -49,6 +49,7 @@ static int omx, omy, mx, my;
 static int hmx, hmy;
 bool slomo = false;
 bool gravityArrows = false;
+bool gravityActive = true;
 
 static std::vector<Constraint*> constraints;
 static ConstraintSolver* constraintSolver = NULL;
@@ -359,7 +360,7 @@ static void draw_forces ( void )
     {
         springForce[spring]->draw();
     }
-	if (gravityForce) {
+	if (gravityForce && gravityActive) {
         gravityForce->drawArrows = gravityArrows;
         gravityForce->draw();
     }
@@ -372,7 +373,7 @@ static void apply_forces ( void )
         springForce[spring]->apply_spring();
     }
 
-    if (gravityForce) {
+    if (gravityForce && gravityActive) {
         gravityForce->apply_gravity();
     }
 
@@ -485,6 +486,10 @@ static void key_func ( unsigned char key, int x, int y )
         case 'G':
 	        gravityArrows = !gravityArrows;
 	        break;
+        case 'h':
+        case 'H':
+            gravityActive = !gravityActive;
+            break;
 
         case 's': //slomo mode
         case 'S':
