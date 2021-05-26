@@ -664,17 +664,18 @@ int main ( int argc, char ** argv )
 
 	printf ( "\n\nHow to use this application:\n\n" );
 
-    printf ( "To change scenes, use the number keys:\n\n" );
-    printf ( "\t TODO\n" );
+    printf ( "To change scenes, use the number keys 1-4\n\n" );
 
-    printf ( "To change integration schemes:\n\n" );
+    printf ( "To change integration schemes:\n" );
     printf ( "\t Switch to the Euler method with the 'e' key\n" );
     printf ( "\t Switch to the Mid-point method with the 'm' key\n" );
     printf ( "\t Switch to the Runge-Kutta 4 method with the 'r' key\n" );
 
-    printf ( "Other controls:\n\n" );
+    printf ( "Other controls:\n" );
 	printf ( "\t Toggle construction/simulation display with the spacebar key\n" );
     printf ( "\t Toggle slow-motion with the 's' key\n" );
+    printf ( "\t Toggle gravity with the 'h' key\n" );
+    printf ( "\t Toggle gravity force arrows with the 'g' key\n" );
     printf ( "\t Reset the particles with the 'c' key\n" );
 	printf ( "\t Dump frames by pressing the 'd' key\n" );
 	printf ( "\t Quit by pressing the 'q' key\n" );
