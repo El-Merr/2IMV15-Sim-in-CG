@@ -50,14 +50,6 @@ std::vector<Vec2f> Particle::derive_eval() { // returns a vector of the velocity
     return eval;
 }
 
-//void Particle::compute_velocity() {
-//    std::vector<Vec2f> eval = derive_eval();
-//    m_Velocity += eval[1];
-//    //these lines aim to remove that the forces go to inf and leave the window
-//    m_Velocity[0] = std::min(m_Velocity[0], 0.1f);
-//    m_Velocity[1] = std::min(m_Velocity[1], 0.1f);
-//}
-
 /**
  * Draws the direction of particles with arrowheads.
  */
