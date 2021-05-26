@@ -34,8 +34,8 @@ static int mouse_particle_index;
 static int scheme;
 
 // spring constants
-static float spring_ks = 0.001;
-static float spring_kd = 0.00001;
+static float spring_ks = 0.01;
+static float spring_kd = 0.0001;
 
 // static Particle *pList;
 static std::vector<Particle*> pVector;
@@ -163,7 +163,7 @@ void handle_mouse() {
                 }
 
                 // create springforce between mouse and closest particle
-                mouseForce = new SpringForce(mouseParticle, dragParticle, 0.6, 0.00004, 0.0000001);
+                mouseForce = new SpringForce(mouseParticle, dragParticle, 0.6, 0.0004, 0.000001);
             } catch (...) {
                 printf("There is no particle to drag");
             }
@@ -221,7 +221,7 @@ static void init_system(int sceneNr)
             // particle grid
             for (int r = 0; r < height; r++) {
                 for (int c = 0; c < width; c++) {
-                    pVector.push_back(new Particle((start_cloth - r_offset*r + offset*c), 0.001));
+                    pVector.push_back(new Particle((start_cloth - r_offset*r + offset*c), defaultMass));
                 }
             }
             int size = pVector.size();
@@ -253,12 +253,11 @@ static void init_system(int sceneNr)
 
         }
         case 2: {//cloth scene
-            mouse_particle_index = 20;
 
             for (int i = 0; i < 5; i++) {
                 for (int j = 0; j < 5; j++) {
                     pVector.push_back(new Particle(center - 2 * offset +
-                                                   Vec2f(i * dist, j * dist), 0.001));
+                                                   Vec2f(i * dist, j * dist), defaultMass));
                 }
             }
             int size = pVector.size();
@@ -268,13 +267,13 @@ static void init_system(int sceneNr)
 
             for (int ii = 0; ii < size - 1; ii++) {
                 if ((ii + 1) % 5 != 0) {
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist * 1.5, 0.001, 0.00001));
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist * 1.5, spring_ks, spring_kd));
                 }
                 if (ii < 20) {
                     if ((ii + 1) % 5 == 0) {
                         constraints.push_back(new RodConstraint(pVector[ii], pVector[ii + 5], dist));
                     }
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist * 2, 0.001, 0.00001));
+                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist * 2, spring_ks, spring_kd));
                 }
             }
             constraintSolver = new ConstraintSolver(pVector, constraints);
