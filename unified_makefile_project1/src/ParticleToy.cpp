@@ -677,7 +677,7 @@ int main ( int argc, char ** argv )
 	dsim = 0;
 	dump_frames = 0;
 	frame_number = 0;
-	scheme = 0;
+	scheme = 2;
 
 	init_system(0);
 	
