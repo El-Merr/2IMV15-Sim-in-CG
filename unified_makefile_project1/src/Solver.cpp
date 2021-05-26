@@ -65,8 +65,8 @@ void compute_rungekutta(Particle* p, float dt) {
     deriv = p->derive_eval();
 
     // 4th order
-    position = old[0] + 0.5f * dt * deriv[0];
-    velocity = DAMP * (old[1] + 0.5f * dt * deriv[1]);
+    position = old[0] + dt * deriv[0];
+    velocity = DAMP * (old[1] + dt * deriv[1]);
     p->set_state(position, velocity);
     deriv = p->derive_eval();
 
