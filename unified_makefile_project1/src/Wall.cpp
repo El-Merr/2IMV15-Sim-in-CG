@@ -22,11 +22,9 @@ void Wall::detectCollision(std::vector<Particle*> pVector) {
     int size = pVector.size();
     for(int ii=0; ii < size; ii++)
     {
-        if (crude) {
             crudeCollision(pVector, ii);
-        } else {
-            elasticCollision(pVector, ii);
-        }
+
+
     }
 }
 
@@ -69,14 +67,14 @@ void Wall::draw()
     glVertex2f( m_end[0], m_end[1]+0.02 );
     glVertex2f( m_end[0], m_end[1] );
 
-    if(crude) {
-        glColor3f(0.0, 0.8, 0.0);
-        glBegin( GL_QUADS );
-        glVertex2f( -0.5, 0.3 );
-        glVertex2f( -0.5, 0.5  );
-        glVertex2f( -0.7, 0.5 );
-        glVertex2f( -0.7, 0.3  );
-    }
+//    if(crude) {
+//        glColor3f(0.0, 0.8, 0.0);
+//        glBegin( GL_QUADS );
+//        glVertex2f( -0.5, 0.3 );
+//        glVertex2f( -0.5, 0.5  );
+//        glVertex2f( -0.7, 0.5 );
+//        glVertex2f( -0.7, 0.3  );
+//    }
 
     glEnd();
 }

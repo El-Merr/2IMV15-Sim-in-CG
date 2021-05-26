@@ -492,10 +492,10 @@ static void key_func ( unsigned char key, int x, int y )
             slomo = !slomo;
             break;
 
-        case 'z': //crude collision mode
-        case 'Z':
-            wall->crude = !wall->crude;
-            break;
+//        case 'z': //crude collision mode
+//        case 'Z':
+//            wall->crude = !wall->crude;
+//            break;
 
         case ' ':
             dsim = !dsim;
