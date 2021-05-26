@@ -284,8 +284,8 @@ static void init_system(int sceneNr)
                 mouse_particle_index = 0;
 
                 pVector.push_back(new Particle(center + Vec2f(2*dist, 0.0), 0.001));
-                pVector.push_back(new Particle(center - Vec2f(2*dist, 0.1), 0.001));
-                pVector[1]->m_Velocity += Vec2f(0.04, 0);
+                pVector.push_back(new Particle(center - Vec2f(2*dist, 0.3), 0.001));
+                pVector[1]->m_Velocity += Vec2f(0.06, 0);
 
                 wall = new Wall(Vec2f(-0.6, -0.6), Vec2f(0.6, -0.6));
 
