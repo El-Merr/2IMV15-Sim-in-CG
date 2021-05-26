@@ -276,14 +276,8 @@ static void init_system(int sceneNr)
                     }
                     springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist * 2, 0.001, 0.00001));
                 }
-                //circularWireConstraint = new CircularWireConstraint(pVector[4], center + Vec2f(-2.5 * dist, 4.5 * dist), 0.1);
-                //auto circularWireConstraint2 = new CircularWireConstraint(pVector[24], center + Vec2f(2.5 * dist, 4.5 * dist), 0.1);
-
-                //auto rodConstraint2 = new RodConstraint(pVector[4], pVector[24], 4 * dist);
-                //constraints.push_back(circularWireConstraint);
-                //constraints.push_back(circularWireConstraint2);
-                constraintSolver = new ConstraintSolver(pVector, constraints);
             }
+            constraintSolver = new ConstraintSolver(pVector, constraints);
             break;
         }
             case 3: {//single particle and wall
@@ -291,7 +285,7 @@ static void init_system(int sceneNr)
 
                 pVector.push_back(new Particle(center + Vec2f(2*dist, 0.0), 0.001));
                 pVector.push_back(new Particle(center - Vec2f(2*dist, 0.1), 0.001));
-                pVector[1]->m_Velocity = Vec2f(0.4, 0);
+                pVector[1]->m_Velocity += Vec2f(0.04, 0);
 
                 wall = new Wall(Vec2f(-0.6, -0.6), Vec2f(0.6, -0.6));
 
@@ -493,6 +487,16 @@ static void key_func ( unsigned char key, int x, int y )
 	        gravityArrows = !gravityArrows;
 	        break;
 
+        case 's': //slomo mode
+        case 'S':
+            slomo = !slomo;
+            break;
+
+        case 'z': //crude collision mode
+        case 'Z':
+            wall->crude = !wall->crude;
+            break;
+
         case ' ':
             dsim = !dsim;
             break;
@@ -516,10 +520,7 @@ static void key_func ( unsigned char key, int x, int y )
             free_data();
             init_system(3);
             break;
-	    case 's': //slomo mode
-        case 'S':
-            slomo = !slomo;
-            break;
+
         case 'e':
         case 'E':
             scheme = 0;
