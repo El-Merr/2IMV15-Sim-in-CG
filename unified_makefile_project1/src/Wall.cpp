@@ -24,19 +24,19 @@ void Wall::detectCollision(std::vector<Particle*> pVector) {
     {
             crudeCollision(pVector, ii);
 
-
+            //elasticCollision(pVector, ii);
     }
 }
 
 void Wall::elasticCollision(std::vector<Particle*> pVector, int ii) {
     Vec2f N = Vec2f(0, -pVector[ii]->m_Force[1]);
 
-    Vec2f x_normal = (N * pVector[ii]->m_Force)*N;
+    Vec2f x_normal = (N * pVector[ii]->m_Velocity)*N;
     Vec2f x_tang = pVector[ii]->m_Force - x_normal;
 
     // if a particle is within epsilon of the wall, and it is heading into the wall, we detect collision
     if ( norm(pVector[ii]->m_Position - Vec2f(pVector[ii]->m_Position[0], m_start[1])) < eps
-         && N * pVector[ii]->m_Force < 0 ) {
+         && N * pVector[ii]->m_Velocity < 0 ) {
         printf("elastic\n");
         Vec2f V_tang = pVector[ii]->m_Force - x_normal;
         //printf("V_tang: %f\n", pVector[ii]->m_Force[1]);
@@ -50,11 +50,13 @@ void Wall::crudeCollision(std::vector<Particle*> pVector, int ii) {
     // if a particle is within epsilon of the wall, and it is heading into the wall, we detect collision
     if ( norm(pVector[ii]->m_Position - Vec2f(pVector[ii]->m_Position[0], m_start[1])) < eps
          && V_normal * pVector[ii]->m_Force < 0 ) {
-        //printf("eps larger than: %f\n", V_normal[1]);
+
         Vec2f V_tang = pVector[ii]->m_Force + V_normal;
-        //printf("V_tang: %f\n", pVector[ii]->m_Force[1]);
-        pVector[ii]->m_Force += V_tang + 17 * V_normal;
-        //printf("force after: %f\n", pVector[ii]->m_Force[1]);
+        if (norm(pVector[ii]->m_Position - Vec2f(pVector[ii]->m_Position[0], m_start[1])) < 0.01) {
+            pVector[ii]->m_Force[1] =0;
+        }else {
+            pVector[ii]->m_Force += V_tang + 13 * V_normal;
+        }
     }
 }
 
