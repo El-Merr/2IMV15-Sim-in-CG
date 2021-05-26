@@ -14,8 +14,7 @@ public:
     virtual ~Wall(void);
     void draw();
     void detectCollision(std::vector<Particle*> pVector);
-    void crudeCollision(std::vector<Particle*> pVector, int ii);
-    void elasticCollision(std::vector<Particle*> pVector, int ii);
+    void collisionResponse(std::vector<Particle*> pVector, int ii);
     bool crude;
 private:
     Vec2f const m_start;
