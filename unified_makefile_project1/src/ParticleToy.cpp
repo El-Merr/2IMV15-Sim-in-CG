@@ -244,104 +244,7 @@ static void init_system(int sceneNr)
         case 0: {//default scene
 
         }
-
-        case 1: { //cloth scene
-            int width = 5;
-            int height = 6;
-            Vec2f start_cloth = Vec2f(-2*dist, 2*dist);
-            Vec2f r_offset = Vec2f(0.0, dist);
-            // particle grid
-            for (int r = 0; r < height; r++) {
-                for (int c = 0; c < width; c++) {
-                    pVector.push_back(new Particle((start_cloth - r_offset*r + offset*c), defaultMass));
-                }
-            }
-            int size = pVector.size();
-
-            // add spring forces between neighbours
-            for(int ii=0; ii < size - 1; ii++) {
-                // if particle not in last column
-                if ( (ii+1) % (width) != 0 ) {
-                    // connect with particle on the right
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist*2, spring_ks, spring_kd));
-                }
-
-                // if particle not on the bottom row
-                if (ii < size - width ) {
-                    // connect with particle below
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + width], dist*2, spring_ks, spring_kd));
-                }
-            }
-
-            // hang the cloth on the rail
-            const double rail_dist = 0.1;
-            const Vec2f rail_start = Vec2f(-0.8, pVector[0]->m_Position[1]+rail_dist);
-            const Vec2f rail_end = Vec2f(0.8, pVector[0]->m_Position[1]+rail_dist);
-            for (int i=0; i < width; i++) {
-                constraints.push_back(new RailConstraint(pVector[i], rail_start, rail_end, rail_dist));
-            }
-            constraintSolver = new ConstraintSolver(pVector, constraints);
-            break;
-
-        }
-        case 2: {//cloth scene
-
-            for (int i = 0; i < 5; i++) {
-                for (int j = 0; j < 5; j++) {
-                    pVector.push_back(new Particle(center - 2 * offset +
-                                                   Vec2f(i * dist, j * dist), defaultMass));
-                }
-            }
-            int size = pVector.size();
-
-            wall = new Wall(Vec2f(-0.6, -0.6), Vec2f(0.6, -0.6));
-            //wall->draw();
-
-            for (int ii = 0; ii < size - 1; ii++) {
-                if ((ii + 1) % 5 != 0) {
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist * 1.5, spring_ks, spring_kd));
-                }
-                if (ii < 20) {
-                    if ((ii + 1) % 5 == 0) {
-                        constraints.push_back(new RodConstraint(pVector[ii], pVector[ii + 5], dist));
-                    }
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 5], dist * 2, spring_ks, spring_kd));
-                }
-            }
-            constraintSolver = new ConstraintSolver(pVector, constraints);
-            break;
-        }
-            case 3: {//single particle and wall
-                mouse_particle_index = 0;
-
-                pVector.push_back(new Particle(center + Vec2f(2*dist, 0.0), 0.001));
-                pVector.push_back(new Particle(center - Vec2f(2*dist, 0.3), 0.001));
-                pVector[1]->m_Velocity += Vec2f(0.06, 0);
-
-                wall = new Wall(Vec2f(-0.6, -0.6), Vec2f(0.6, -0.6));
-
-                break;
-        }
-        case 4:
-        {// Create three particles, attach them to each other, then add a
-            // circular wire constraint to the first.
-            pVector.push_back(new Particle(center + offset, defaultMass));
-            pVector.push_back(new Particle(center + offset + offset, defaultMass));
-            pVector.push_back(new Particle(center + offset + offset + offset, defaultMass));
-
-            mouse_particle_index = 1; // sets the 2nd particle to be the mouse interaction particle.
-
-            springForce.push_back(new SpringForce(pVector[0], pVector[1], dist, spring_ks, spring_kd));
-
-            // constraints
-            rodConstraint = new RodConstraint(pVector[1], pVector[2], dist);
-            circularWireConstraint = new CircularWireConstraint(pVector[0], center, dist);
-
-            constraints.push_back(circularWireConstraint);
-            constraints.push_back(rodConstraint);
-            constraintSolver = new ConstraintSolver(pVector, constraints);
-
-            break;}
+//31
     }
     gravityForce = new GravityForce(pVector);
 }
@@ -828,7 +731,7 @@ int main ( int argc, char ** argv )
 	frame_number = 0;
 	scheme = 2;
 
-	//init_system(0);
+
     if ( argc != 1 && argc != 6 ) {
         fprintf ( stderr, "usage : %s N dt diff visc force source\n", argv[0] );
         fprintf ( stderr, "where:\n" );\
@@ -867,10 +770,11 @@ int main ( int argc, char ** argv )
     printf ( "\t Quit by pressing the 'q' key\n" );
 
     dvel = 0;
-//
-//    if ( !allocate_data () ) exit ( 1 );
-//    clear_data ();
 
+    if ( !allocate_data () ) exit ( 1 );
+    clear_data ();
+
+    init_system(0);
 	
 	win_x = 800;
 	win_y = 800;

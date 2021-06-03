@@ -5,13 +5,13 @@
 #define FOR_EACH_CELL for ( i=1 ; i<=N ; i++ ) { for ( j=1 ; j<=N ; j++ ) {
 #define END_FOR }}
 
-void FLuidSolver::add_source ( int N, float * x, float * s, float dt )
+void FluidSolver::add_source ( int N, float * x, float * s, float dt )
 {
     int i, size=(N+2)*(N+2);
     for ( i=0 ; i<size ; i++ ) x[i] += dt*s[i];
 }
 
-void FLuidSolver::set_bnd ( int N, int b, float * x )
+void FluidSolver::set_bnd ( int N, int b, float * x )
 {
     int i;
 
@@ -27,7 +27,7 @@ void FLuidSolver::set_bnd ( int N, int b, float * x )
     x[IX(N+1,N+1)] = 0.5f*(x[IX(N,N+1)]+x[IX(N+1,N)]);
 }
 
-void FLuidSolver::lin_solve ( int N, int b, float * x, float * x0, float a, float c )
+void FluidSolver::lin_solve ( int N, int b, float * x, float * x0, float a, float c )
 {
     int i, j, k;
 
@@ -39,13 +39,13 @@ void FLuidSolver::lin_solve ( int N, int b, float * x, float * x0, float a, floa
     }
 }
 
-void FLuidSolver::diffuse ( int N, int b, float * x, float * x0, float diff, float dt )
+void FluidSolver::diffuse ( int N, int b, float * x, float * x0, float diff, float dt )
 {
     float a=dt*diff*N*N;
     lin_solve ( N, b, x, x0, a, 1+4*a );
 }
 
-void FLuidSolver::advect ( int N, int b, float * d, float * d0, float * u, float * v, float dt )
+void FluidSolver::advect ( int N, int b, float * d, float * d0, float * u, float * v, float dt )
 {
     int i, j, i0, j0, i1, j1;
     float x, y, s0, t0, s1, t1, dt0;
@@ -62,8 +62,9 @@ void FLuidSolver::advect ( int N, int b, float * d, float * d0, float * u, float
     set_bnd ( N, b, d );
 }
 
-void FLuidSolver::project ( int N, float * u, float * v, float * p, float * div )
+void FluidSolver::project ( int N, float * u, float * v, float * p, float * div )
 {
+
     int i, j;
 
     FOR_EACH_CELL
@@ -81,14 +82,14 @@ void FLuidSolver::project ( int N, float * u, float * v, float * p, float * div 
     set_bnd ( N, 1, u ); set_bnd ( N, 2, v );
 }
 
-void FLuidSolver::dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt )
+void FluidSolver::dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt )
 {
     add_source ( N, x, x0, dt );
     SWAP ( x0, x ); diffuse ( N, 0, x, x0, diff, dt );
     SWAP ( x0, x ); advect ( N, 0, x, x0, u, v, dt );
 }
 
-void FLuidSolver::vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc, float dt )
+void FluidSolver::vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc, float dt )
 {
     add_source ( N, u, u0, dt ); add_source ( N, v, v0, dt );
     SWAP ( u0, u ); diffuse ( N, 1, u, u0, visc, dt );
