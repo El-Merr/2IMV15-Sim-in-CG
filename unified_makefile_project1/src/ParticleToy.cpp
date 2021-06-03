@@ -427,7 +427,8 @@ relates mouse movements to particle toy construction
 
 static void get_from_UI (float * d, float * u, float * v)
 {
-	int i, j, size = (N+2)*(N+2);
+	int i, j;
+	int size = (N+2)*(N+2);
 	// int size, flag;
 //	int hi, hj;
 //	float x, y;
@@ -440,8 +441,8 @@ static void get_from_UI (float * d, float * u, float * v)
 	&& !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
 
     //from demo.c
-    i = (int)((       mx /(float)win_x)*N+1);
-    j = (int)(((win_y-my)/(float)win_y)*N+1);
+    i = (int)((       mx /(float)win_x)*N);
+    j = (int)(((win_y-my)/(float)win_y)*N);
 
     if ( i<1 || i>N || j<1 || j>N ) return;
 
@@ -454,19 +455,6 @@ static void get_from_UI (float * d, float * u, float * v)
         d[IX(i,j)] = source;
     }
     //end mouse from demo.c
-
-
-//    x = (float)2 * i / N - 1;
-//    y = (float)2 * j / N - 1;
-
-	if ( mouse_down[0]) {
-	}
-
-	if ( mouse_down[2] ) {
-	}
-
-//	hi = (int)((       hmx /(float)win_x)*N);
-//	hj = (int)(((win_y-hmy)/(float)win_y)*N);
 
 	if( mouse_release[0] ) {
 
