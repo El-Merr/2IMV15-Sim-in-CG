@@ -316,7 +316,7 @@ static void draw_velocity ( void )
 
     h = 1.0f/N;
 
-    glColor3f ( 1.0f, 1.0f, 1.0f );
+    glColor3f ( 0.7f, 0.7f, 1.0f );
     glLineWidth ( 1.0f );
 
     glBegin ( GL_LINES );
@@ -710,7 +710,7 @@ int main ( int argc, char ** argv )
     }
 
     if ( argc == 1 ) {
-        N = 64;
+        N = 128;
         dt = 0.1f;
         d = 5.f;
         diff = 0.0f;
