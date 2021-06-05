@@ -107,7 +107,7 @@ static void pre_display ( void )
 
 static void post_display ( void )
 {
-	glutSwapBuffers ();/
+	glutSwapBuffers ();
 }
 
 static void draw_velocity ( void )
