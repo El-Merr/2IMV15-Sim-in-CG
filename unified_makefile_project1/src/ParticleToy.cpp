@@ -11,6 +11,7 @@
 #include "Constraint.h"
 #include "ConstraintSolver.h"
 #include "Wall.h"
+#include "FixedObject.h"
 
 #include <vector>
 #include <stdlib.h>
@@ -26,7 +27,7 @@
 /* external definitions (from solver) */
 extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slomoBool, int scheme );
 /* global variables */
-// demo.c these are in FluidSolver.cpp
+// these are in FluidSolver.cpp
 extern void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt );
 extern void vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc, float dt );
 
@@ -240,13 +241,8 @@ static void init_system(int sceneNr)
 	const Vec2f offset(dist, 0.0);
 	float defaultMass = 0.01;
 
-//	switch(sceneNr) {
-//        case 0: {//default scene
-//
-//        }
-//
-//    }
-//   gravityForce = new GravityForce(pVector);
+	FixedObject *fixed = new FixedObject(std::vector<float>(1.0f));
+    fixed->DrawFixedObject();
 }
 
 /*
