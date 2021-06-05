@@ -26,7 +26,7 @@
 /* external definitions (from solver) */
 extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slomoBool, int scheme );
 /* global variables */
-// demo.c these are in FluidSolver.cpp
+// demo.c these are in solver.c
 extern void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt );
 extern void vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc, float dt );
 
@@ -240,13 +240,13 @@ static void init_system(int sceneNr)
 	const Vec2f offset(dist, 0.0);
 	float defaultMass = 0.01;
 
-//	switch(sceneNr) {
-//        case 0: {//default scene
-//
-//        }
-//
-//    }
-//   gravityForce = new GravityForce(pVector);
+	switch(sceneNr) {
+        case 0: {//default scene
+
+        }
+//31
+    }
+    gravityForce = new GravityForce(pVector);
 }
 
 /*
@@ -260,7 +260,7 @@ static void pre_display ( void )
 	glViewport ( 0, 0, win_x, win_y );
 	glMatrixMode ( GL_PROJECTION );
 	glLoadIdentity ();
-	gluOrtho2D ( 0.0, 1.0, 0.0, 1.0 );
+	gluOrtho2D ( -1.0, 1.0, -1.0, 1.0 );
 	glClearColor ( 0.0f, 0.0f, 0.0f, 1.0f );
 	glClear ( GL_COLOR_BUFFER_BIT );
 }
@@ -322,7 +322,7 @@ static void draw_velocity ( void )
     glBegin ( GL_LINES );
 
     for ( i=1 ; i<=N ; i++ ) {
-        x = (i-0.5)*h;
+        x = (i-0.5f)*h;
         for ( j=1 ; j<=N ; j++ ) {
             y = (j-0.5f)*h;
 
@@ -429,6 +429,9 @@ static void get_from_UI (float * d, float * u, float * v)
 {
 	int i, j;
 	int size = (N+2)*(N+2);
+	// int size, flag;
+//	int hi, hj;
+//	float x, y;
 
     for ( i=0 ; i<size ; i++ ) {
         u[i] = v[i] = d[i] = 0.0f;
@@ -438,8 +441,8 @@ static void get_from_UI (float * d, float * u, float * v)
 	&& !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
 
     //from demo.c
-    i = (int)((       mx /(float)win_x)*N+1);
-    j = (int)(((win_y-my)/(float)win_y)*N+1);
+    i = (int)((       mx /(float)win_x)*N);
+    j = (int)(((win_y-my)/(float)win_y)*N);
 
     if ( i<1 || i>N || j<1 || j>N ) return;
 
@@ -484,6 +487,7 @@ static void key_func ( unsigned char key, int x, int y )
         case 'C':
             clear_data();
             break;
+
         case 'd':
         case 'D':
             dump_frames = !dump_frames;
@@ -502,6 +506,7 @@ static void key_func ( unsigned char key, int x, int y )
         case 'H':
             gravityActive = !gravityActive;
             break;
+
         case 's': //slomo mode
         case 'S':
             slomo = !slomo;
@@ -511,46 +516,53 @@ static void key_func ( unsigned char key, int x, int y )
         case 'V':
             dvel = !dvel;
             break;
+
+
+//        case 'z': //crude collision mode
+//        case 'Z':
+//            wall->crude = !wall->crude;
+//            break;
+
         case ' ':
             dsim = !dsim;
             break;
 
-//        case '1':
-//            free_data();
-//            init_system(0);
-//            break;
-//
-//        case '2':
-//            free_data();
-//            init_system(1);
-//            break;
-//
-//	    case '3':
-//            free_data();
-//            init_system(2);
-//            break;
-//
-//        case '4':
-//            free_data();
-//            init_system(3);
-//            break;
-//        case '5':
-//            free_data();
-//            init_system(4);
-//            break;
-//
-//        case 'e':
-//        case 'E':
-//            scheme = 0;
-//            break;
-//        case 'm':
-//        case 'M':
-//            scheme = 1;
-//            break;
-//        case 'r':
-//        case 'R':
-//            scheme = 2;
-//            break;
+        case '1':
+            free_data();
+            init_system(0);
+            break;
+
+        case '2':
+            free_data();
+            init_system(1);
+            break;
+
+	    case '3':
+            free_data();
+            init_system(2);
+            break;
+
+        case '4':
+            free_data();
+            init_system(3);
+            break;
+        case '5':
+            free_data();
+            init_system(4);
+            break;
+
+        case 'e':
+        case 'E':
+            scheme = 0;
+            break;
+        case 'm':
+        case 'M':
+            scheme = 1;
+            break;
+        case 'r':
+        case 'R':
+            scheme = 2;
+            break;
     }
 }
 
@@ -672,6 +684,17 @@ int main ( int argc, char ** argv )
 {
 	glutInit ( &argc, argv );
 
+	if ( argc == 1 ) {
+		N = 64;
+		dt = 0.1f;
+		d = 5.f;
+		fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g\n",
+			N, dt, d );
+	} else {
+		N = atoi(argv[1]);
+		dt = atof(argv[2]);
+		d = atof(argv[3]);
+	}
 
 	printf ( "\n\nHow to use this application:\n\n" );
 
@@ -696,7 +719,7 @@ int main ( int argc, char ** argv )
 	frame_number = 0;
 	scheme = 2;
 
-    //from demo.c
+
     if ( argc != 1 && argc != 6 ) {
         fprintf ( stderr, "usage : %s N dt diff visc force source\n", argv[0] );
         fprintf ( stderr, "where:\n" );\
@@ -712,13 +735,12 @@ int main ( int argc, char ** argv )
     if ( argc == 1 ) {
         N = 128;
         dt = 0.1f;
-        d = 5.f;
         diff = 0.0f;
         visc = 0.0f;
         force = 5.0f;
         source = 100.0f;
-        fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g diff=%g visc=%g force = %g source=%g\n",
-                  N, dt, d, diff, visc, force, source );
+        fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force = %g source=%g\n",
+                  N, dt, diff, visc, force, source );
     } else {
         N = atoi(argv[1]);
         dt = atof(argv[2]);
@@ -726,7 +748,6 @@ int main ( int argc, char ** argv )
         visc = atof(argv[4]);
         force = atof(argv[5]);
         source = atof(argv[6]);
-        d = atof(argv[7]);
     }
 
     printf ( "\n\nHow to use this demo:\n\n" );
@@ -743,8 +764,8 @@ int main ( int argc, char ** argv )
 
     init_system(0);
 	
-	win_x = 900;
-	win_y = 900;
+	win_x = 800;
+	win_y = 800;
 	open_glut_window ();
 
 	glutMainLoop ();
