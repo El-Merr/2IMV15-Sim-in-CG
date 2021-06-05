@@ -1,5 +1,5 @@
 // ParticleToy.cpp : Defines the entry point for the console application.
-//
+// make clean && make
 
 #include "Particle.h"
 #include "SpringForce.h"
@@ -710,7 +710,7 @@ int main ( int argc, char ** argv )
     }
 
     if ( argc == 1 ) {
-        N = 64;
+        N = 128;
         dt = 0.1f;
         d = 5.f;
         diff = 0.0f;
