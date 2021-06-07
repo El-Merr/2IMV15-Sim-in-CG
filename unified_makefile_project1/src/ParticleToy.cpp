@@ -73,6 +73,7 @@ static RodConstraint * rodConstraint = NULL;
 static CircularWireConstraint * circularWireConstraint = NULL;
 static GravityForce * gravityForce = NULL;
 static RailConstraint* railConstraint = NULL;
+static FixedObject *fixed = NULL;
 
 
 Particle* mouseParticle = NULL;
@@ -86,6 +87,21 @@ bool hold = false; //is the mouse held down?
 free/clear/allocate simulation data
 ----------------------------------------------------------------------
 */
+
+static void init_system(int sceneNr)
+{
+    const double dist = 1;
+    const Vec2f center(0.5, 0.5);
+    const Vec2f offset(dist, 0.0);
+    float defaultMass = 0.01;
+
+    std::vector<Vec2f> pointVector;
+    pointVector.push_back(center+Vec2f(-0.1, -0.1));
+    pointVector.push_back(center+Vec2f(0.1, -0.1));
+    pointVector.push_back(center+Vec2f(0.0, 0.1));
+    fixed = new FixedObject(pointVector);
+    // pVector.push_back(new Particle(center + offset, defaultMass));
+}
 
 static void free_data ( void )
 {
@@ -115,6 +131,10 @@ static void free_data ( void )
     if (wall) {
         delete wall;
         wall = NULL;
+    }
+    if (fixed) {
+        delete fixed;
+        fixed = NULL;
     }
     //from demo.c
     if ( u ) free ( u );
@@ -234,16 +254,6 @@ void handle_mouse() {
     }
 }
 
-static void init_system(int sceneNr)
-{
-	const double dist = 0.2;
-	const Vec2f center(0.0, 0.0);
-	const Vec2f offset(dist, 0.0);
-	float defaultMass = 0.01;
-
-	FixedObject *fixed = new FixedObject(std::vector<float>(1.0f));
-    fixed->DrawFixedObject();
-}
 
 /*
 ----------------------------------------------------------------------
@@ -401,6 +411,12 @@ static void draw_constraints ( void )
 	}
 	if (wall) {
         wall->draw();
+    }
+}
+
+static void draw_objects ( void ) {
+    if (fixed) {
+        fixed->DrawFixedObject();
     }
 }
 
@@ -608,6 +624,7 @@ static void display_func ( void )
 	draw_constraints();
 	draw_particles();
 
+
 	if (dsim) {
         draw_direction();
 	}
@@ -619,7 +636,8 @@ static void display_func ( void )
 	// demo.c
     if ( dvel ) draw_velocity ();
     else		draw_density ();
-
+    // draw objects after fluid
+    draw_objects();
 	post_display ();
 }
 

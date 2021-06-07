@@ -3,22 +3,23 @@
 #include <GL/glut.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <Eigen/Dense>
+#include <Eigen/IterativeLinearSolvers>
+#include <gfx/vec2.h>
 
-FixedObject::FixedObject(std::vector<float> pointVector) {
+FixedObject::FixedObject(std::vector<Vec2f> pointVector) {
     points = pointVector;
 }
 
-//virtual ~FixedObject::FixedObject() {
-//
-//}
+FixedObject::~FixedObject(void) {
+
+}
 
 void FixedObject::DrawFixedObject() {
-    printf("are we getting here?");
-    glColor3f(1.f, 0.6f, 0.f);
-    glBegin(GL_QUADS);
-    glVertex2f(-.5, -.5);
-    glVertex2f(0.5, -.5);
-    glVertex2f(0.5, .5);
-    glVertex2f(-.5, .5);
+    glColor3f(1.f, 0.7f, 0.f);
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < points.size(); i ++) {
+        glVertex2f(points[i][0], points[i][1]);
+    }
     glEnd();
 }
