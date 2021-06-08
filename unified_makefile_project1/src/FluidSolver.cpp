@@ -1,12 +1,59 @@
+#include "FixedObject.h"
+#include <gfx/vec2.h>
+#include "vector"
+
 #define IX(i,j) ((i)+(N+2)*(j))
 #define SWAP(x0,x) {float * tmp=x0;x0=x;x=tmp;}
 #define FOR_EACH_CELL for ( i=1 ; i<=N ; i++ ) { for ( j=1 ; j<=N ; j++ ) {
 #define END_FOR }}
 
+static std::vector<FixedObject*> fixedObjects;
+
 void add_source ( int N, float * x, float * s, float dt )
 {
 	int i, size=(N+2)*(N+2);
 	for ( i=0 ; i<size ; i++ ) x[i] += dt*s[i];
+}
+
+void bnd_fixed_object ( int N, int b, float * x) {
+    for ( int obj=0; obj < fixedObjects.size(); obj++ ) {
+        auto points = fixedObjects[obj]->get_points();
+        Vec2f p1, p2;
+        for ( int point=0; point < points.size(); point++ ) {
+            p1 = points[point];
+            if ( point == points.size() - 1 ) {    // when last point, connect to first
+                p2 = points[0];
+            } else {
+                p2 = points[point + 1];
+            }
+
+            if (p1[0] > p2[0]) {
+                Vec2f temp = p1;
+                p1 = p2;
+                p2 = temp;
+            }
+
+//            printf("point: %f , %f", p1[0], p1[1]);
+            p1 = p1 * N;
+            p2 = p2 * N;
+
+            // line y = ax + b
+            float a = (p1[1] - p2[1]) / (p1[0] - p2[0]);
+            float b = p1[1] - a * p1[0];
+            for ( int px=p1[0]; px <= p2[0]; px++ ) {
+                int py = floor(a * px + b);
+//                printf("a: %f, b: %f, px: %d  py: %d\n", a, b, px, py);
+                x[IX(px  ,py)] = b==2 ? -x[IX(px,py)] : x[IX(px ,py)];
+//                x[IX(px  ,py)] = b==1 ? -x[IX(px,py)] : x[IX(px ,py)];
+            }
+
+
+        }
+    }
+    for ( int p=1; p <= N; p++ ) {
+        int line = 75;
+        x[IX(p  ,line)] = b==2 ? -x[IX(p,line)] : x[IX(p ,line)];
+    }
 }
 
 void set_bnd ( int N, int b, float * x )
@@ -19,11 +66,22 @@ void set_bnd ( int N, int b, float * x )
 		x[IX(i,0  )] = b==2 ? -x[IX(i,1)] : x[IX(i,1)];
 		x[IX(i,N+1)] = b==2 ? -x[IX(i,N)] : x[IX(i,N)];
 	}
+	for ( int p=1; p <= N; p++ ) {
+	    int line = 50;
+        x[IX(p  ,line)] = b==2 ? -x[IX(p,line)] : x[IX(p ,line)];
+	}
+
+    bnd_fixed_object( N, b, x);
+
 	x[IX(0  ,0  )] = 0.5f*(x[IX(1,0  )]+x[IX(0  ,1)]);
 	x[IX(0  ,N+1)] = 0.5f*(x[IX(1,N+1)]+x[IX(0  ,N)]);
 	x[IX(N+1,0  )] = 0.5f*(x[IX(N,0  )]+x[IX(N+1,1)]);
 	x[IX(N+1,N+1)] = 0.5f*(x[IX(N,N+1)]+x[IX(N+1,N)]);
+
+
 }
+
+
 
 void lin_solve ( int N, int b, float * x, float * x0, float a, float c )
 {
@@ -95,5 +153,10 @@ void vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc,
 	SWAP ( u0, u ); SWAP ( v0, v );
 	advect ( N, 1, u, u0, u0, v0, dt ); advect ( N, 2, v, v0, u0, v0, dt );
 	project ( N, u, v, u0, v0 );
+}
+
+void add_objects ( std::vector<FixedObject*> objects ) {
+    fixedObjects.clear();
+    fixedObjects = objects;
 }
 

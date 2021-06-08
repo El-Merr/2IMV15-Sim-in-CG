@@ -15,6 +15,10 @@ FixedObject::~FixedObject(void) {
 
 }
 
+std::vector<Vec2f> FixedObject::get_points() {
+    return points;
+}
+
 void FixedObject::DrawFixedObject() {
     glColor3f(1.f, 0.7f, 0.f);
     glBegin(GL_POLYGON);

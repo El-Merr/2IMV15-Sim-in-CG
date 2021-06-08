@@ -30,6 +30,8 @@ extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slom
 // these are in FluidSolver.cpp
 extern void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt );
 extern void vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc, float dt );
+extern void add_objects ( std::vector<FixedObject*> objects );
+
 
 static int N;
 static float dt, d;
@@ -108,6 +110,8 @@ static void init_system(int sceneNr)
     pointVector2.push_back(center+Vec2f(0.0-dist, 0.15));
     pointVector2.push_back(center+Vec2f(0.2-dist, 0.0));
     fixedObjects.push_back(new FixedObject(pointVector2));
+
+    add_objects(fixedObjects);
 
 }
 

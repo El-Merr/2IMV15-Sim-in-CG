@@ -10,6 +10,8 @@ class FixedObject {
     public:
         FixedObject(std::vector<Vec2f> pointsVector);
         virtual ~FixedObject(void);
+
+        std::vector<Vec2f> get_points();
         void DrawFixedObject();
     private:
         std::vector<Vec2f> points;
