@@ -111,6 +111,13 @@ static void init_system(int sceneNr)
     pointVector2.push_back(center+Vec2f(0.2-dist, 0.0));
     fixedObjects.push_back(new FixedObject(pointVector2));
 
+//    std::vector<Vec2f> pointVector3;
+//    pointVector3.push_back(center+Vec2f(-dist, -dist));
+//    pointVector3.push_back(center+Vec2f(+dist, -dist));
+//    pointVector3.push_back(center+Vec2f(+dist, +dist));
+//    pointVector3.push_back(center+Vec2f(-dist, +dist));
+//    fixedObjects.push_back(new FixedObject(pointVector3));
+
     add_objects(fixedObjects);
 
 }
