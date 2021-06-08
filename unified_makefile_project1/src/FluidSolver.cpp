@@ -18,77 +18,41 @@ void add_source ( int N, float * x, float * s, float dt )
 void bnd_fixed_object ( int N, int b, float * x) {
     for ( int obj=0; obj < fixedObjects.size(); obj++ ) {
         auto points = fixedObjects[obj]->get_points();
+
+        // for every two adjacent points, set boundary on the line between them
         Vec2f p1, p2;
         for ( int point=0; point < points.size(); point++ ) {
+            // 0 <= point <= 1, so *N for scale and connect last point to the first one
             p1 = points[point] * N;
-            p2 = (point == points.size() - 1 ? p2 = points[0] : p2 = points[point + 1]) * N;
-//            if ( point == points.size() - 1 ) {    // when last point, connect to first
-//                p2 = points[0];
-//            } else {
-//                p2 = points[point + 1];
-//            }
+            p2 = (point == points.size() - 1 ? points[0] : points[point + 1]) * N;
 
-
+            // when vertical difference > horizontal difference, swap the x-y orientation
+            // this is for drawing the vertical lines correctly and to prevent gaps in the boundary
+            int orient_x, orient_y;
             if ( std::abs(p1[0] - p2[0]) < std::abs(p1[1] - p2[1]) ) {
-                if (p1[1] > p2[1]) {
-                    Vec2f temp = p1;
-                    p1 = p2;
-                    p2 = temp;
-                }
-                float a = (p1[0] - p2[0]) / (p1[1] - p2[1]);
-                float b = p1[0] - a * p1[1];
-                for ( int py=p1[1]; py <= p2[1]; py++ ) {
-                    int px = floor(a * py + b + 0.5);
-//                printf("a: %f, b: %f, px: %d  py: %d\n", a, b, px, py);
-                    x[IX(px  ,py)] = -x[IX(px+1,py+1)];
-                    //b==1 ? -x[IX(px,py)] : x[IX(px ,py)];
-//                x[IX(px  ,py+1)] = b==1 ? -x[IX(px,py+1)] : x[IX(px ,py+1)];
-                }
+                orient_x=1; orient_y=0;
             } else {
-                if (p1[0] > p2[0]) {
-                    Vec2f temp = p1;
-                    p1 = p2;
-                    p2 = temp;
-                }
-
-                float a = (p1[1] - p2[1]) / (p1[0] - p2[0]);
-                float b = p1[1] - a * p1[0];
-                for ( int px=p1[0]; px <= p2[0]; px++ ) {
-                    int py = floor(a * px + b + 0.5);
-//                printf("a: %f, b: %f, px: %d  py: %d\n", a, b, px, py);
-                    x[IX(px  ,py)] = -x[IX(px+1,py+1)]; //b==1 ? -x[IX(px,py)] : x[IX(px ,py)];
-//                x[IX(px  ,py+1)] = b==1 ? -x[IX(px,py+1)] : x[IX(px ,py+1)];
-                }
+                orient_x=0; orient_y=1;
             }
 
+            // swap p1 and p2 when p1 > p2 in order to correctly iterate over the grid
+            if (p1[orient_x] > p2[orient_x]) {
+                Vec2f temp = p1;
+                p1 = p2;
+                p2 = temp;
+            }
 
+            // calculate the slope a and constant b for line y=ax+b
+            float a = (p1[orient_y] - p2[orient_y]) / (p1[orient_x] - p2[orient_x]);
+            float b = p1[orient_y] - a * p1[orient_x];
 
-////            printf("point: %f , %f", p1[0], p1[1]);
-//            p1 = p1 * N;
-//            p2 = p2 * N;
-
-//            printf("p1: %f, %f     p2: %f, %f\n", p1[0],p1[1], p2[0], p2[1]);
-
-            // line y = ax + b
-//            float a = (p1[1] - p2[1]) / (p1[0] - p2[0]);
-//            float b = p1[1] - a * p1[0];
-//            for ( int px=p1[0]; px <= p2[0]; px++ ) {
-//                int py = floor(a * px + b);
-////                printf("a: %f, b: %f, px: %d  py: %d\n", a, b, px, py);
-//                x[IX(px  ,py)] = -x[IX(px,py)]; //b==1 ? -x[IX(px,py)] : x[IX(px ,py)];
-////                x[IX(px  ,py+1)] = b==1 ? -x[IX(px,py+1)] : x[IX(px ,py+1)];
-//            }
-
-
+            // for every point on the line, set the boundary
+            for ( int px=p1[orient_x]; px <= p2[orient_x]; px++ ) {
+                int py = floor(a * px + b + 0.5);
+                orient_x == 0 ? x[IX(px  ,py)] = -x[IX(px+1,py+1)] : x[IX(py  ,px)] = -x[IX(py+1,px+1)];
+            }
         }
     }
-//    for ( int i=50; i <= 100; i++ ) {
-//        int line = 75;
-//        x[IX(50  ,i)] = b==1 ? -x[IX(51,i)] : x[IX(51,i)];        // horizontal
-//        x[IX(100+1,i)] = b==1 ? -x[IX(100,i)] : x[IX(100,i)];
-//        x[IX(i,50  )] = b==2 ? -x[IX(i,51)] : x[IX(i,51)];        // vertical
-//        x[IX(i,100+1)] = b==2 ? -x[IX(i,100)] : x[IX(i,100)];
-//    }
 }
 
 void set_bnd ( int N, int b, float * x )
