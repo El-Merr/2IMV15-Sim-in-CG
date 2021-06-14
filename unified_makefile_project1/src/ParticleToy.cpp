@@ -3,6 +3,7 @@
 
 #include "Particle.h"
 #include "SpringForce.h"
+#include "DragForce.h"
 #include "RodConstraint.h"
 #include "RailConstraint.h"
 #include "CircularWireConstraint.h"
@@ -82,7 +83,7 @@ static std::vector<RigidObject*> rigidObjects;
 
 
 Particle* mouseParticle = NULL;
-SpringForce* mouseForce = NULL;
+DragForce* mouseForce = NULL;
 Wall* wall = NULL;
 
 bool hold = false; //is the mouse held down?
@@ -107,7 +108,7 @@ static void init_system(int sceneNr)
     fixedObjects.push_back(new FixedObject(pointVector));
 
     rigidObjects.push_back(new RigidObject(Vec2f(0.4, 0.5)));
-    rigidObjects[0]->m_Force += Vec2f(0, 0.000003);
+   // rigidObjects[0]->m_Force += Vec2f(0, 0.000003);
 
 //    std::vector<Vec2f> pointVector3;
 //    pointVector3.push_back(center+Vec2f(-dist, -dist)-offset);
@@ -117,9 +118,6 @@ static void init_system(int sceneNr)
 //    fixedObjects.push_back(new FixedObject(pointVector3));
 
     add_objects(fixedObjects);
-
-    pVector.push_back(new Particle(Vec2f(N, N), 0.01));
-
 }
 
 static void free_data ( void )
@@ -236,25 +234,24 @@ void handle_mouse() {
                 mouseParticle = new Particle(Vec2f(x, y), 0);
 
                 // find the particle in pVector that is closest to the mouse
-                Particle* dragParticle = pVector[0];
-                float dist = sqrt( pow(mouseParticle->m_Position[0] - pVector[0]->m_Position[0], 2)
-                                   + pow(mouseParticle->m_Position[1] - pVector[0]->m_Position[1], 2) );
+                RigidObject *dragObject = rigidObjects[0];
+                float dist = sqrt( pow(mouseParticle->m_Position[0] - dragObject->center[0], 2)
+                                   + pow(mouseParticle->m_Position[1] - dragObject->center[1], 2) );
                 float new_dist = 0;
-                for ( auto p : pVector ) {
-                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - p->m_Position[0], 2)
-                                     + pow(mouseParticle->m_Position[1] - p->m_Position[1], 2) );
-                    if (new_dist < dist) {
-                        dist = new_dist;
-                        dragParticle = p;
-                    }
-                }
+//                for ( auto p : pVector ) {
+//                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - p->m_Position[0], 2)
+//                                     + pow(mouseParticle->m_Position[1] - p->m_Position[1], 2) );
+//                    if (new_dist < dist) {
+//                        dist = new_dist;
+//                        dragObject = p;
+//                    }
+//                }
 
                 // create springforce between mouse and closest particle
-                mouseForce = new SpringForce(mouseParticle, dragParticle, 0.6, 0.0004, 0.000001);
+                mouseForce = new DragForce(mouseParticle, dragObject, 0.6, 0.0004, 0.000001);
             } catch (...) {
                 printf("There is no particle to drag");
             }
-
         }
         hold = true;
         mouseParticle->set_state(Vec2f(x, y), Vec2f(0.0, 0.0));
@@ -269,8 +266,6 @@ void handle_mouse() {
         delete mouseForce;
     }
 }
-
-
 /*
 ----------------------------------------------------------------------
 OpenGL specific drawing routines
