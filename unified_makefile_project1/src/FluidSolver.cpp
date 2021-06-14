@@ -28,7 +28,6 @@ void set_bnd ( int N, int b, float * x )
 void lin_solve ( int N, int b, float * x, float * x0, float a, float c )
 {
 	int i, j, k;
-
 	for ( k=0 ; k<20 ; k++ ) {
 		FOR_EACH_CELL
 			x[IX(i,j)] = (x0[IX(i,j)] + a*(x[IX(i-1,j)]+x[IX(i+1,j)]+x[IX(i,j-1)]+x[IX(i,j+1)]))/c;
@@ -60,6 +59,23 @@ void advect ( int N, int b, float * d, float * d0, float * u, float * v, float d
 	set_bnd ( N, b, d );
 }
 
+void confine ( int N, float * u, float * v, float * u0, float * v0, float * uAvg, float * vAvg )
+{
+    int i, j;
+    float xVorticity, yVorticity;
+
+    FOR_EACH_CELL
+            uAvg[IX(i,j)] = (u[IX(i-1,j)] + u[IX(i+1,j)])/2; vAvg[IX(i,j)] = (v[IX(i,j-1)] + v[IX(i,j+1)])/2;
+    END_FOR
+
+    FOR_EACH_CELL
+            xVorticity = vAvg[IX(i-1,j)] + vAvg[IX(i+1,j)]/2; yVorticity = uAvg[IX(i,j-1)] + uAvg[IX(i,j+1)]/2;
+//            xLength = -
+
+            u[IX(i,j)] += 0.1*xVorticity; v[IX(i,j)] += 0.1*yVorticity;
+    END_FOR
+}
+
 void project ( int N, float * u, float * v, float * p, float * div )
 {
 	int i, j;
@@ -86,13 +102,14 @@ void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff,
 	SWAP ( x0, x ); advect ( N, 0, x, x0, u, v, dt );
 }
 
-void vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc, float dt )
+void vel_step ( int N, float * u, float * v, float * u0, float * v0, float * vort, float * n, float visc, float dt )
 {
 	add_source ( N, u, u0, dt ); add_source ( N, v, v0, dt );
 	SWAP ( u0, u ); diffuse ( N, 1, u, u0, visc, dt );
 	SWAP ( v0, v ); diffuse ( N, 2, v, v0, visc, dt );
 	project ( N, u, v, u0, v0 );
 	SWAP ( u0, u ); SWAP ( v0, v );
+    confine( N, u, v, u0, v0, vort, n);
 	advect ( N, 1, u, u0, u0, v0, dt ); advect ( N, 2, v, v0, u0, v0, dt );
 	project ( N, u, v, u0, v0 );
 }
