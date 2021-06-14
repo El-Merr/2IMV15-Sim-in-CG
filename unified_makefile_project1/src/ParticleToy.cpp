@@ -102,14 +102,6 @@ static void init_system(int sceneNr)
     pointVector.push_back(center+Vec2f(0.1+dist, -0.1));
     pointVector.push_back(center+Vec2f(0.0+dist, 0.1));
     fixedObjects.push_back(new FixedObject(pointVector));
-//
-//    std::vector<Vec2f> pointVector2;
-//    pointVector2.push_back(center+Vec2f(-0.1-dist, -0.1));
-//    pointVector2.push_back(center+Vec2f(-0.2-dist, 0.0));
-//    pointVector2.push_back(center+Vec2f(0.1-dist, -0.1));
-//    pointVector2.push_back(center+Vec2f(0.0-dist, 0.15));
-//    pointVector2.push_back(center+Vec2f(0.2-dist, 0.0));
-//    fixedObjects.push_back(new FixedObject(pointVector2));
 
     std::vector<Vec2f> pointVector3;
     pointVector3.push_back(center+Vec2f(-dist, -dist)-offset);
@@ -119,6 +111,8 @@ static void init_system(int sceneNr)
     fixedObjects.push_back(new FixedObject(pointVector3));
 
     add_objects(fixedObjects);
+
+    pVector.push_back(new Particle(Vec2f(N, N), 0.01));
 
 }
 
