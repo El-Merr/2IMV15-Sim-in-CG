@@ -72,7 +72,7 @@ std::vector<Vec2f> RigidObject::get_points() {
     return worldPoints;
 }
 
-void RigidObject::drawRigidObject() {
+void RigidObject::draw_object() {
     glColor3f(2.f, 0.7f, 4.f);
     std::vector<Vec2f> worldPoints = get_points();
     glBegin(GL_POLYGON);

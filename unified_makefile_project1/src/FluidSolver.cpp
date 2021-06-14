@@ -1,4 +1,4 @@
-#include "FixedObject.h"
+#include "Object.h"
 #include <gfx/vec2.h>
 #include "vector"
 
@@ -7,7 +7,7 @@
 #define FOR_EACH_CELL for ( i=1 ; i<=N ; i++ ) { for ( j=1 ; j<=N ; j++ ) {
 #define END_FOR }}
 
-static std::vector<FixedObject*> fixedObjects;
+static std::vector<Object*> objects;
 
 void add_source ( int N, float * x, float * s, float dt )
 {
@@ -16,8 +16,8 @@ void add_source ( int N, float * x, float * s, float dt )
 }
 
 void bnd_fixed_object ( int N, int b, float * x) {
-    for ( int obj=0; obj < fixedObjects.size(); obj++ ) {
-        auto points = fixedObjects[obj]->get_points();
+    for ( int obj=0; obj < objects.size(); obj++ ) {
+        auto points = objects[obj]->get_points();
 
         // for every two adjacent points, set boundary on the line between them
         Vec2f p1, p2;
@@ -150,8 +150,8 @@ void vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc,
 	project ( N, u, v, u0, v0 );
 }
 
-void add_objects ( std::vector<FixedObject*> objects ) {
-    fixedObjects.clear();
-    fixedObjects = objects;
+void add_objects ( std::vector<Object*> obj ) {
+    objects.clear();
+    objects = obj;
 }
 

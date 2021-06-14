@@ -5,16 +5,22 @@
 #include <Eigen/Dense>
 #include <Eigen/IterativeLinearSolvers>
 #include <gfx/vec2.h>
+#include "Object.h"
 
-class RigidObject {
+class RigidObject : public Object {
     public:
         RigidObject(Vec2f pointsVector);
         virtual ~RigidObject(void);
+
+        void draw_object() override;
+        std::vector<Vec2f> get_points() override;
+
+
         void clear_force();
         void reset();
         void computeBodySpace();
-        std::vector<Vec2f> get_points();
-        void drawRigidObject();
+
+//        void drawRigidObject();
         std::vector<Vec2f> derive_eval();
         void set_state(Vec2f pos, Vec2f vel);
         std::vector<Vec2f> get_state();
