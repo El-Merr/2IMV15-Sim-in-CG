@@ -11,6 +11,7 @@
 #include "Constraint.h"
 #include "ConstraintSolver.h"
 #include "Wall.h"
+#include "FixedObject.h"
 
 #include <vector>
 #include <stdlib.h>
@@ -26,9 +27,11 @@
 /* external definitions (from solver) */
 extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slomoBool, int scheme );
 /* global variables */
-// demo.c these are in FluidSolver.cpp
+// these are in FluidSolver.cpp
 extern void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt );
 extern void vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc, float dt );
+extern void add_objects ( std::vector<FixedObject*> objects );
+
 
 static int N;
 static float dt, d;
@@ -72,6 +75,7 @@ static RodConstraint * rodConstraint = NULL;
 static CircularWireConstraint * circularWireConstraint = NULL;
 static GravityForce * gravityForce = NULL;
 static RailConstraint* railConstraint = NULL;
+static std::vector<FixedObject*> fixedObjects;
 
 
 Particle* mouseParticle = NULL;
@@ -85,6 +89,38 @@ bool hold = false; //is the mouse held down?
 free/clear/allocate simulation data
 ----------------------------------------------------------------------
 */
+
+static void init_system(int sceneNr)
+{
+    const double dist = 0.2;
+    const Vec2f center(0.5, 0.5);
+    const Vec2f offset(dist, 0.0);
+    float defaultMass = 0.01;
+
+    std::vector<Vec2f> pointVector;
+    pointVector.push_back(center+Vec2f(-0.1+dist, -0.1));
+    pointVector.push_back(center+Vec2f(0.1+dist, -0.1));
+    pointVector.push_back(center+Vec2f(0.0+dist, 0.1));
+    fixedObjects.push_back(new FixedObject(pointVector));
+//
+//    std::vector<Vec2f> pointVector2;
+//    pointVector2.push_back(center+Vec2f(-0.1-dist, -0.1));
+//    pointVector2.push_back(center+Vec2f(-0.2-dist, 0.0));
+//    pointVector2.push_back(center+Vec2f(0.1-dist, -0.1));
+//    pointVector2.push_back(center+Vec2f(0.0-dist, 0.15));
+//    pointVector2.push_back(center+Vec2f(0.2-dist, 0.0));
+//    fixedObjects.push_back(new FixedObject(pointVector2));
+
+    std::vector<Vec2f> pointVector3;
+    pointVector3.push_back(center+Vec2f(-dist, -dist)-offset);
+    pointVector3.push_back(center+Vec2f(+dist, -dist)-offset);
+    pointVector3.push_back(center+Vec2f(+dist, +dist)-offset);
+    pointVector3.push_back(center+Vec2f(-dist, +dist)-offset);
+    fixedObjects.push_back(new FixedObject(pointVector3));
+
+    add_objects(fixedObjects);
+
+}
 
 static void free_data ( void )
 {
@@ -115,6 +151,7 @@ static void free_data ( void )
         delete wall;
         wall = NULL;
     }
+    fixedObjects.clear();
     //from demo.c
     if ( u ) free ( u );
     if ( v ) free ( v );
@@ -233,21 +270,6 @@ void handle_mouse() {
     }
 }
 
-static void init_system(int sceneNr)
-{
-	const double dist = 0.2;
-	const Vec2f center(0.0, 0.0);
-	const Vec2f offset(dist, 0.0);
-	float defaultMass = 0.01;
-
-//	switch(sceneNr) {
-//        case 0: {//default scene
-//
-//        }
-//
-//    }
-//   gravityForce = new GravityForce(pVector);
-}
 
 /*
 ----------------------------------------------------------------------
@@ -405,6 +427,12 @@ static void draw_constraints ( void )
 	}
 	if (wall) {
         wall->draw();
+    }
+}
+
+static void draw_fixed_objects (void ) {
+    for (int i = 0; i < fixedObjects.size(); i ++) {
+        fixedObjects[i]->DrawFixedObject();
     }
 }
 
@@ -612,6 +640,7 @@ static void display_func ( void )
 	draw_constraints();
 	draw_particles();
 
+
 	if (dsim) {
         draw_direction();
 	}
@@ -623,7 +652,8 @@ static void display_func ( void )
 	// demo.c
     if ( dvel ) draw_velocity ();
     else		draw_density ();
-
+    // draw objects after fluid
+    draw_fixed_objects();
 	post_display ();
 }
 
