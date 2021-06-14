@@ -12,6 +12,7 @@
 #include "ConstraintSolver.h"
 #include "Wall.h"
 #include "FixedObject.h"
+#include "RigidObject.h"
 
 #include <vector>
 #include <stdlib.h>
@@ -26,6 +27,7 @@
 
 /* external definitions (from solver) */
 extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slomoBool, int scheme );
+extern void rigid_simulation_step( std::vector<RigidObject*> rigidObjects, float dt, bool slomoBool, int scheme );
 /* global variables */
 // these are in FluidSolver.cpp
 extern void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt );
@@ -76,6 +78,7 @@ static CircularWireConstraint * circularWireConstraint = NULL;
 static GravityForce * gravityForce = NULL;
 static RailConstraint* railConstraint = NULL;
 static std::vector<FixedObject*> fixedObjects;
+static std::vector<RigidObject*> rigidObjects;
 
 
 Particle* mouseParticle = NULL;
@@ -103,12 +106,15 @@ static void init_system(int sceneNr)
     pointVector.push_back(center+Vec2f(0.0+dist, 0.1));
     fixedObjects.push_back(new FixedObject(pointVector));
 
-    std::vector<Vec2f> pointVector3;
-    pointVector3.push_back(center+Vec2f(-dist, -dist)-offset);
-    pointVector3.push_back(center+Vec2f(+dist, -dist)-offset);
-    pointVector3.push_back(center+Vec2f(+dist, +dist)-offset);
-    pointVector3.push_back(center+Vec2f(-dist, +dist)-offset);
-    fixedObjects.push_back(new FixedObject(pointVector3));
+    rigidObjects.push_back(new RigidObject(Vec2f(0.4, 0.5)));
+    rigidObjects[0]->m_Force += Vec2f(0, 0.000003);
+
+//    std::vector<Vec2f> pointVector3;
+//    pointVector3.push_back(center+Vec2f(-dist, -dist)-offset);
+//    pointVector3.push_back(center+Vec2f(+dist, -dist)-offset);
+//    pointVector3.push_back(center+Vec2f(+dist, +dist)-offset);
+//    pointVector3.push_back(center+Vec2f(-dist, +dist)-offset);
+//    fixedObjects.push_back(new FixedObject(pointVector3));
 
     add_objects(fixedObjects);
 
@@ -426,9 +432,13 @@ static void draw_constraints ( void )
 
 static void draw_fixed_objects (void ) {
     for (int i = 0; i < fixedObjects.size(); i ++) {
-        fixedObjects[i]->DrawFixedObject();
+        fixedObjects[i]->drawFixedObject();
+    }
+    for (int i =0; i < rigidObjects.size(); i++) {
+        rigidObjects[i]->drawRigidObject();
     }
 }
+
 
 /**
  * Draw the direction of the particles forces.
@@ -611,13 +621,16 @@ static void idle_func ( void )
         apply_forces();
         apply_constraints();
         simulation_step( pVector, dt, slomo, scheme );
-	}
-	else {
-        // demo.c
         get_from_UI ( dens_prev, u_prev, v_prev );
         vel_step ( N, u, v, u_prev, v_prev, visc, dt );
         dens_step ( N, dens, dens_prev, u, v, diff, dt );
-	    remap_GUI();
+        rigid_simulation_step( rigidObjects, dt, slomo, scheme );
+        remap_GUI();
+        //fluid below
+	}
+	else {
+        // demo.c
+
 	}
 
 

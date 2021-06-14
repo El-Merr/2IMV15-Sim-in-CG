@@ -12,7 +12,7 @@ class FixedObject {
         virtual ~FixedObject(void);
 
         std::vector<Vec2f> get_points();
-        void DrawFixedObject();
+        void drawFixedObject();
     private:
         std::vector<Vec2f> points;
 };

@@ -8,14 +8,21 @@
 
 class RigidObject {
     public:
-        RigidObject(std::vector<Vec2f> pointsVector);
+        RigidObject(Vec2f pointsVector);
         virtual ~RigidObject(void);
-
+        void clear_force();
+        void reset();
+        void computeBodySpace();
         std::vector<Vec2f> get_points();
-        void DrawRigidObject();
-
-        Vec2f position;
-
+        void drawRigidObject();
+        std::vector<Vec2f> derive_eval();
+        void set_state(Vec2f pos, Vec2f vel);
+        std::vector<Vec2f> get_state();
+        Vec2f center;
+        Vec2f m_Velocity;
+        Vec2f m_Force;
+        float m_Mass;
+        std::vector<Vec2f> m_Direction;
     private:
         std::vector<Vec2f> points;
 };
