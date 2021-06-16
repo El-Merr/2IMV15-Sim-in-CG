@@ -254,7 +254,7 @@ void handle_mouse() {
                         dragObject = p;
                     }
                 }
-                mouseForce = new DragForce(mouseParticle, dragObject, 0.01, 0.00004, 0.00001);
+                mouseForce = new DragForce(mouseParticle, dragObject, dist, 0.00004, 0.00001);
 
 //                if (!dragState && mouseParticle) {
 //                    delete mouseParticle;
@@ -263,7 +263,7 @@ void handle_mouse() {
                 printf("There is no particle to drag");
             }
         }
-        if (dist <= 0.12 || dragState) {
+        if (dist <= 0.15 || dragState) {
             // create springforce between mouse and closest particle
 
             mouseParticle->set_state(Vec2f(x, y), Vec2f(0.0, 0.0));
