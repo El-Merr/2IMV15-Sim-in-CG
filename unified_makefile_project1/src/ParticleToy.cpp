@@ -88,6 +88,7 @@ DragForce* mouseForce = NULL;
 Wall* wall = NULL;
 
 bool hold = false; //is the mouse held down?
+bool dragState = false; // Are we draging an object rn?
 
 /*
 ----------------------------------------------------------------------
@@ -230,7 +231,9 @@ void handle_mouse() {
     x = (float)  i / N;
     y = (float)  j / N;
 
+
     if (mouse_down[0]) {
+        float dist = INFINITY; // distance to the closest rigid object
         // when left mouse button is pressed and held, a spring force is applied between it and a given particle
         if (!hold) {
             // try to find a particle to drag, otherwise there is no particle in the scene
@@ -240,7 +243,7 @@ void handle_mouse() {
 
                 // find the particle in pVector that is closest to the mouse
                 RigidObject *dragObject = rigidObjects[0];
-                float dist = sqrt( pow(mouseParticle->m_Position[0] - dragObject->center[0], 2)
+                dist = sqrt( pow(mouseParticle->m_Position[0] - dragObject->center[0], 2)
                                    + pow(mouseParticle->m_Position[1] - dragObject->center[1], 2) );
                 float new_dist = 0;
                 for ( auto p : rigidObjects ) {
@@ -251,20 +254,28 @@ void handle_mouse() {
                         dragObject = p;
                     }
                 }
-
-                // create springforce between mouse and closest particle
                 mouseForce = new DragForce(mouseParticle, dragObject, 0.01, 0.00004, 0.00001);
+
+//                if (!dragState && mouseParticle) {
+//                    delete mouseParticle;
+//                }
             } catch (...) {
                 printf("There is no particle to drag");
             }
         }
-        hold = true;
-        mouseParticle->set_state(Vec2f(x, y), Vec2f(0.0, 0.0));
+        if (dist <= 0.12 || dragState) {
+            // create springforce between mouse and closest particle
+
+            mouseParticle->set_state(Vec2f(x, y), Vec2f(0.0, 0.0));
+            hold = true;
+            dragState = true;
+        }
     }
 
     if (mouse_release[0]) {
 //        printf("mouse released\n");
         hold = false;
+        dragState = false;
         mouse_down[0] = false;
         mouse_release[0] = false;
         delete mouseParticle;
@@ -472,12 +483,12 @@ static void get_from_UI (float * d, float * u, float * v)
 
     if ( i<1 || i>N || j<1 || j>N ) return;
 
-    if ( mouse_down[0] ) {
+    if ( mouse_down[0] && !dragState ) {
         u[IX(i,j)] = force * (mx-omx);
         v[IX(i,j)] = force * (omy-my);
     }
 
-    if ( mouse_down[2] ) {
+    if ( mouse_down[2] && !dragState ) {
         d[IX(i,j)] = source;
     }
     //end mouse from demo.c
