@@ -12,6 +12,7 @@
 #include "Constraint.h"
 #include "ConstraintSolver.h"
 #include "Wall.h"
+#include "Object.h"
 #include "FixedObject.h"
 #include "RigidObject.h"
 
@@ -33,7 +34,7 @@ extern void rigid_simulation_step( std::vector<RigidObject*> rigidObjects, float
 // these are in FluidSolver.cpp
 extern void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt );
 extern void vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc, float dt );
-extern void add_objects ( std::vector<FixedObject*> objects );
+extern void add_objects ( std::vector<Object*> obj );
 
 
 static int N;
@@ -72,15 +73,16 @@ bool gravityActive = true;
 
 static std::vector<Constraint*> constraints;
 static ConstraintSolver* constraintSolver = NULL;
-
-static std::vector<SpringForce*> springForce;
 static RodConstraint * rodConstraint = NULL;
 static CircularWireConstraint * circularWireConstraint = NULL;
-static GravityForce * gravityForce = NULL;
 static RailConstraint* railConstraint = NULL;
+
+static std::vector<SpringForce*> springForce;
+static GravityForce * gravityForce = NULL;
+
+static std::vector<Object*> objects;
 static std::vector<FixedObject*> fixedObjects;
 static std::vector<RigidObject*> rigidObjects;
-
 
 Particle* mouseParticle = NULL;
 DragForce* mouseForce = NULL;
@@ -105,10 +107,12 @@ static void init_system(int sceneNr)
     pointVector.push_back(center+Vec2f(-0.1+dist, -0.1));
     pointVector.push_back(center+Vec2f(0.1+dist, -0.1));
     pointVector.push_back(center+Vec2f(0.0+dist, 0.1));
-    fixedObjects.push_back(new FixedObject(pointVector));
+    objects.push_back(new FixedObject(pointVector));
+//    fixedObjects.push_back(new FixedObject(pointVector));
 
-    rigidObjects.push_back(new RigidObject(Vec2f(0.4, 0.5)));
-   // rigidObjects[0]->m_Force += Vec2f(0, 0.000003);
+
+    objects.push_back(new RigidObject(Vec2f(0.4, 0.5)));
+
 
 //    std::vector<Vec2f> pointVector3;
 //    pointVector3.push_back(center+Vec2f(-dist, -dist)-offset);
@@ -117,13 +121,15 @@ static void init_system(int sceneNr)
 //    pointVector3.push_back(center+Vec2f(-dist, +dist)-offset);
 //    fixedObjects.push_back(new FixedObject(pointVector3));
 
-    add_objects(fixedObjects);
+
+    add_objects(objects);
 }
 
 static void free_data ( void )
 {
 	pVector.clear();
 	constraints.clear();
+	objects.clear();
 	if (rodConstraint) {
 		delete rodConstraint;
         rodConstraint = NULL;
@@ -425,12 +431,9 @@ static void draw_constraints ( void )
     }
 }
 
-static void draw_fixed_objects (void ) {
-    for (int i = 0; i < fixedObjects.size(); i ++) {
-        fixedObjects[i]->drawFixedObject();
-    }
-    for (int i =0; i < rigidObjects.size(); i++) {
-        rigidObjects[i]->drawRigidObject();
+static void draw_objects (void ) {
+    for (int i = 0; i < objects.size(); i ++) {
+        objects[i]->draw_object();
     }
 }
 
@@ -655,7 +658,7 @@ static void display_func ( void )
     if ( dvel ) draw_velocity ();
     else		draw_density ();
     // draw objects after fluid
-    draw_fixed_objects();
+    draw_objects();
 	post_display ();
 }
 
