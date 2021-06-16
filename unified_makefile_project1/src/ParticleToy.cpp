@@ -248,7 +248,7 @@ void handle_mouse() {
 //                }
 
                 // create springforce between mouse and closest particle
-                mouseForce = new DragForce(mouseParticle, dragObject, 0.6, 0.0004, 0.000001);
+                mouseForce = new DragForce(mouseParticle, dragObject, 0.001, 0.0004, 0.000001);
             } catch (...) {
                 printf("There is no particle to drag");
             }
