@@ -73,10 +73,7 @@ void set_bnd ( int N, int b, float * x )
 	x[IX(N+1,0  )] = 0.5f*(x[IX(N,0  )]+x[IX(N+1,1)]);
 	x[IX(N+1,N+1)] = 0.5f*(x[IX(N,N+1)]+x[IX(N+1,N)]);
 
-
 }
-
-
 
 void lin_solve ( int N, int b, float * x, float * x0, float a, float c )
 {
