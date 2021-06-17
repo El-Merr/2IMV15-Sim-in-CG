@@ -173,6 +173,12 @@ static void clear_data ( void )
 		pVector[ii]->reset();
 	}
 
+    int j, rigidSize = rigidObjects.size();
+
+    for(j=0; j<rigidSize; j++){
+        rigidObjects[j]->reset();
+    }
+
 	//from demo.c
     int i, size2=(N+2)*(N+2);
 

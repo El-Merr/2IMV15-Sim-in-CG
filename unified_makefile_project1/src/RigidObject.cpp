@@ -8,7 +8,7 @@
 #include <gfx/vec2.h>
 
 RigidObject::RigidObject(Vec2f centerPoint) :
-    center(centerPoint), m_Velocity(Vec2f(0.0, 0.0)), m_Force(Vec2f(0.0, 0.0)), m_Mass(0.01),
+    m_ConstructPos(centerPoint), center(centerPoint), m_Velocity(Vec2f(0.0, 0.0)), m_Force(Vec2f(0.0, 0.0)), m_Mass(0.01),
     m_Direction(std::vector<Vec2f>())
 {
     computeBodySpace();
@@ -46,7 +46,7 @@ void RigidObject::set_state(Vec2f pos, Vec2f vel)
 
 void RigidObject::reset()
 {
-//    center = centerPoint;
+    center = m_ConstructPos;
     m_Velocity = Vec2f(0.0, 0.0);
     m_Force = Vec2f(0.0, 0.0);
     m_Direction.clear();
