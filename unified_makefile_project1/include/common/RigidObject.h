@@ -8,6 +8,8 @@
 #include "Object.h"
 #include "Particle.h"
 
+using namespace Eigen;
+
 class RigidObject : public Object {
     public:
         RigidObject(Vec2f pointsVector);
@@ -24,10 +26,30 @@ class RigidObject : public Object {
         void clear_force();
         void reset();
 
+        void calc_force_and_torque();
+        Vector2f vec_to_Eigen( Vec2f v );
+
     private:
 
         Particle* pCenter;
         std::vector<Particle*> pVector;
+
+        Vector2f position;
+
+        Vector2f rb_Force;
+        Vector2f rb_Torque;
+        Matrix2f R;             // rotation
+
+        Matrix2f I_body;
+        Matrix2f I_body_inv;
+        Matrix2f I_inverse;
+
+        Vector2f velocity;
+        Vector2f omega;         // angular velocity w(t)
+        Vector2f P;             // linear momentum
+        Vector2f L;             // angular momentum
+
+
 
         /** spatial variables */
 //        Vec2f m_center;                 // x (t)
