@@ -84,7 +84,8 @@ static std::vector<Object*> objects;
 static std::vector<RigidObject*> rigidObjects;
 
 Particle* mouseParticle = NULL;
-DragForce* mouseForce = NULL;
+DragForce* objectMouseForce = NULL;
+SpringForce* mouseForce = NULL;
 Wall* wall = NULL;
 
 bool hold = false; //is the mouse held down?
@@ -119,9 +120,9 @@ static void init_system(int sceneNr)
         } //end case 0
         case 1: { //cloth in fluid
             int width = 5;
-            int height = 6;
+            int height = 5;
             float dist2 = 0.1;
-            Vec2f start_cloth = Vec2f(3*dist2, 4*dist);
+            Vec2f start_cloth = Vec2f(1*dist2, 4*dist);
             Vec2f r_offset = Vec2f(0.0, dist2);
             // particle grid
             for (int r = 0; r < height; r++) {
@@ -154,6 +155,15 @@ static void init_system(int sceneNr)
                 constraints.push_back(new RailConstraint(pVector[i], rail_start, rail_end, rail_dist));
             }
             constraintSolver = new ConstraintSolver(pVector, constraints);
+            break;
+        }
+        case 2: {
+            float dist2 = 0.1;
+            pVector.push_back(new Particle((center+Vec2f(-dist2, 0.0)), defaultMass));
+            pVector.push_back(new Particle((center+Vec2f(dist2, 0.0)), defaultMass));
+            springForce.push_back(new SpringForce(pVector[0], pVector[1], dist2*2, spring_ks, spring_kd));
+            gravityForce = new GravityForce(pVector);
+
             break;
         }
     }
@@ -192,13 +202,19 @@ static void free_data ( void )
         delete wall;
         wall = NULL;
     }
-    //from demo.c
-    if ( u ) free ( u );
-    if ( v ) free ( v );
-    if ( u_prev ) free ( u_prev );
-    if ( v_prev ) free ( v_prev );
-    if ( dens ) free ( dens );
-    if ( dens_prev ) free ( dens_prev );
+
+    //from demo.c this way the fluid clears between scene transitions.
+    int i, size2=(N+2)*(N+2);
+    for ( i=0 ; i<size2 ; i++ ) {
+        u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = 0.0f;
+    }
+    // This crashes the program every time
+    // if ( u ) free ( u );
+//    if ( v ) free ( v );
+//    if ( u_prev ) free ( u_prev );
+//    if ( v_prev ) free ( v_prev );
+//    if ( dens ) free ( dens );
+//    if ( dens_prev ) free ( dens_prev );
 }
 
 static void clear_data ( void )
@@ -215,7 +231,7 @@ static void clear_data ( void )
         rigidObjects[j]->reset();
     }
 
-	//from demo.c
+//	//from demo.c this is also in free_data but removing it here results in major lagg
     int i, size2=(N+2)*(N+2);
 
     for ( i=0 ; i<size2 ; i++ ) {
@@ -273,8 +289,8 @@ void handle_mouse() {
     x = (float)  i / N;
     y = (float)  j / N;
 
-
-    if (mouse_down[0]) {
+    // if in a scene with only rigid objects
+    if (mouse_down[0] && rigidObjects.size() > pVector.size()) {
         float dist = INFINITY; // distance to the closest rigid object
         // when left mouse button is pressed and held, a spring force is applied between it and a given particle
         if (!hold && rigidObjects.size() > 0) {
@@ -296,7 +312,7 @@ void handle_mouse() {
                         dragObject = p;
                     }
                 }
-                mouseForce = new DragForce(mouseParticle, dragObject, dist, 0.00004, 0.00001);
+                objectMouseForce = new DragForce(mouseParticle, dragObject, dist, 0.00004, 0.00001);
 
 //                if (!dragState && mouseParticle) {
 //                    delete mouseParticle;
@@ -313,6 +329,39 @@ void handle_mouse() {
             dragState = true;
         }
     }
+    // if in a scene with only particles
+    if (mouse_down[0] && rigidObjects.size() <= pVector.size()) {
+        // when left mouse button is pressed and held, a spring force is applied between it and a given particle
+        if (!hold) {
+            // try to find a particle to drag, otherwise there is no particle in the scene
+            try {
+                // create a particle at the mouse position
+                mouseParticle = new Particle(Vec2f(x, y), 0);
+
+                // find the particle in pVector that is closest to the mouse
+                Particle* dragParticle = pVector[0];
+                float dist = sqrt( pow(mouseParticle->m_Position[0] - pVector[0]->m_Position[0], 2)
+                                   + pow(mouseParticle->m_Position[1] - pVector[0]->m_Position[1], 2) );
+                float new_dist = 0;
+                for ( auto p : pVector ) {
+                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - p->m_Position[0], 2)
+                                     + pow(mouseParticle->m_Position[1] - p->m_Position[1], 2) );
+                    if (new_dist < dist) {
+                        dist = new_dist;
+                        dragParticle = p;
+                    }
+                }
+
+                // create springforce between mouse and closest particle
+                mouseForce = new SpringForce(mouseParticle, dragParticle, dist, 0.004, 0.0001);
+            } catch (...) {
+                printf("There is no particle to drag");
+            }
+
+        }
+        hold = true;
+        mouseParticle->set_state(Vec2f(x, y), Vec2f(0.0, 0.0));
+    }
 
     if (mouse_release[0]) {
 //        printf("mouse released\n");
@@ -321,7 +370,8 @@ void handle_mouse() {
         mouse_down[0] = false;
         mouse_release[0] = false;
         delete mouseParticle;
-        delete mouseForce;
+        if (mouseForce) delete mouseForce;
+        if (objectMouseForce) delete objectMouseForce;
     }
 }
 /*
@@ -459,13 +509,12 @@ static void apply_forces ( void )
     {
         springForce[spring]->apply_spring();
     }
-
     if (gravityForce && gravityActive) {
         gravityForce->apply_gravity();
     }
-
     if (hold) {
-        mouseForce->apply_spring();
+        if(mouseForce) mouseForce->apply_spring();
+        if(objectMouseForce) objectMouseForce->apply_spring();
     }
 
     if (wall) {
@@ -606,12 +655,12 @@ static void key_func ( unsigned char key, int x, int y )
             free_data();
             init_system(1);
             break;
-//
-//	    case '3':
-//            free_data();
-//            init_system(2);
-//            break;
-//
+
+	    case '3':
+            free_data();
+            init_system(2);
+            break;
+
 //        case '4':
 //            free_data();
 //            init_system(3);
@@ -668,13 +717,16 @@ static void idle_func ( void )
 
 	if ( dsim ) {
         handle_mouse();
-        apply_forces();
-        apply_constraints();
-        simulation_step( pVector, dt, slomo, scheme );
         get_from_UI ( dens_prev, u_prev, v_prev );
         vel_step ( N, u, v, u_prev, v_prev, visc, dt );
         dens_step ( N, dens, dens_prev, u, v, diff, dt );
+        apply_forces();
+        apply_constraints();
+        simulation_step( pVector, dt, slomo, scheme );
         rigid_simulation_step( rigidObjects, dt, slomo, scheme );
+
+	} else {
+
         remap_GUI();
 	}
 
@@ -701,7 +753,8 @@ static void display_func ( void )
 
     if (hold) {
         mouseParticle->draw();
-        mouseForce->draw();
+        if(mouseForce) mouseForce->draw();
+        if(objectMouseForce) objectMouseForce->draw();
     }
 	post_display ();
 }
