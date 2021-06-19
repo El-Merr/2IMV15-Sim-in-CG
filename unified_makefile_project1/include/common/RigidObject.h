@@ -30,9 +30,9 @@ class RigidObject : public Object {
         std::vector<Particle*> pVector;
 
         /** spatial variables */
-        Vec2f m_center;                 // x (t)
+//        Vec2f m_center;                 // x (t)
 //        Matrix2f m_Rotation;            // R (t)
-        Vec2f m_Velocity;               // x' (t)
+//        Vec2f m_Velocity;               // x' (t)
 //        Vector2f m_spin;                // w (t)
 //
 //        /** points in body space */
@@ -41,10 +41,10 @@ class RigidObject : public Object {
 //        std::vector<Vector2f> p_pos;
 //        std::vector<Vector2f> p_velocity;   // v_i (t)
 //
-        Vec2f m_Force;
+//        Vec2f m_Force;
 //        Vector2f m_Torque;
-        float m_Mass;
-        std::vector<Vec2f> m_Direction;     // r (t)
+//        float m_Mass;
+//        std::vector<Vec2f> m_Direction;     // r (t)
 //
 //        Matrix3f m_I;
 
