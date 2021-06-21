@@ -83,8 +83,10 @@ static GravityForce * gravityForce = NULL;
 static std::vector<Object*> objects;
 static std::vector<RigidObject*> rigidObjects;
 
+//globals for the fluid propeller
 int xGridPos = 0;
 int yGridPos = 0;
+int sceneNr = 0;
 
 Particle* mouseParticle = NULL;
 DragForce* objectMouseForce = NULL;
@@ -100,7 +102,7 @@ free/clear/allocate simulation data
 ----------------------------------------------------------------------
 */
 
-static void init_system(int sceneNr)
+static void init_system()
 {
     const double dist = 0.2;
     const Vec2f center(0.5, 0.5);
@@ -168,7 +170,7 @@ static void init_system(int sceneNr)
             // gravityForce = new GravityForce(pVector); // adding gravity is pretty pointless here
 
             float xPos = 100;
-            float yPos = 500;
+            float yPos = 450;
 
             xGridPos = (int)((       xPos /(float)win_x)*N+1);
             yGridPos = (int)(((win_y-yPos)/(float)win_y)*N+1);
@@ -181,6 +183,14 @@ static void init_system(int sceneNr)
             // force
             u_prev[IX(2+xGridPos, 2+yGridPos)] = force * 1; // positive x direction
             //v_prev[IX(xGridPos, yGridPos)] = force * (100);
+
+            Vec2f propCenter = Vec2f(0.06, 0.5);
+
+            std::vector<Vec2f> pointVector;
+            pointVector.push_back(propCenter+Vec2f(0.0, 0.0));
+            pointVector.push_back(propCenter+Vec2f(0.04, -0.03));
+            pointVector.push_back(propCenter+Vec2f(0.04, 0.03));
+            objects.push_back(new FixedObject(pointVector));
 
             break;
         }
@@ -668,17 +678,20 @@ static void key_func ( unsigned char key, int x, int y )
 
         case '1':
             free_data();
-            init_system(0);
+            sceneNr = 0;
+            init_system();
             break;
 
         case '2':
             free_data();
-            init_system(1);
+            sceneNr = 1;
+            init_system();
             break;
 
 	    case '3':
             free_data();
-            init_system(2);
+            sceneNr = 2;
+            init_system();
             break;
 
 //        case '4':
@@ -739,7 +752,7 @@ static void idle_func ( void )
         handle_mouse();
 
         //propelling force
-        u[IX(xGridPos, 2+yGridPos)] = force * 10; // positive x direction
+        if(sceneNr = 2) u[IX(xGridPos, 2+yGridPos)] = force * 10; // positive x direction
 
         get_from_UI ( dens_prev, u_prev, v_prev );
         vel_step ( N, u, v, u_prev, v_prev, visc, dt );
@@ -896,7 +909,7 @@ int main ( int argc, char ** argv )
     if ( !allocate_data () ) exit ( 1 );
     clear_data ();
 
-    init_system(0);
+    init_system();
 	
 	win_x = 900;
 	win_y = 900;
