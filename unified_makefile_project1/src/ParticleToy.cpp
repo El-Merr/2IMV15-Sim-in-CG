@@ -38,7 +38,7 @@ extern void add_objects ( std::vector<Object*> obj );
 
 
 static int N;
-static float dt, d;
+static float dt;
 static int dsim;
 static int dump_frames;
 static int frame_number;
@@ -122,7 +122,7 @@ static void init_system(int sceneNr)
             int width = 5;
             int height = 5;
             float dist2 = 0.1;
-            Vec2f start_cloth = Vec2f(1*dist2, 4*dist);
+            Vec2f start_cloth = Vec2f(dist2, 4*dist);
             Vec2f r_offset = Vec2f(0.0, dist2);
             // particle grid
             for (int r = 0; r < height; r++) {
@@ -162,7 +162,22 @@ static void init_system(int sceneNr)
             pVector.push_back(new Particle((center+Vec2f(-dist2, 0.0)), defaultMass));
             pVector.push_back(new Particle((center+Vec2f(dist2, 0.0)), defaultMass));
             springForce.push_back(new SpringForce(pVector[0], pVector[1], dist2*2, spring_ks, spring_kd));
-            gravityForce = new GravityForce(pVector);
+            // gravityForce = new GravityForce(pVector); // adding gravity is pretty pointless here
+
+            float xPos = 100;
+            float yPos = 500;
+
+            int xGridPos = (int)((       xPos /(float)win_x)*N+1);
+            int yGridPos = (int)(((win_y-yPos)/(float)win_y)*N+1);
+
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+                    dens[IX(i+xGridPos, j+yGridPos)] = source;
+                }
+            }
+            // force
+            u_prev[IX(2+xGridPos, 2+yGridPos)] = force * 1; // positive x direction
+            //v_prev[IX(xGridPos, yGridPos)] = force * (100);
 
             break;
         }
@@ -726,7 +741,6 @@ static void idle_func ( void )
         rigid_simulation_step( rigidObjects, dt, slomo, scheme );
 
 	} else {
-
         remap_GUI();
 	}
 
@@ -844,13 +858,13 @@ int main ( int argc, char ** argv )
     if ( argc == 1 ) {
         N = 128;
         dt = 0.1f;
-        d = 5.f;
+        //d = 5.f;
         diff = 0.0f;
         visc = 0.0f;
         force = 5.0f;
         source = 100.0f;
-        fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g diff=%g visc=%g force = %g source=%g\n",
-                  N, dt, d, diff, visc, force, source );
+        fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force = %g source=%g\n",
+                  N, dt, diff, visc, force, source );
     } else {
         N = atoi(argv[1]);
         dt = atof(argv[2]);
@@ -858,7 +872,7 @@ int main ( int argc, char ** argv )
         visc = atof(argv[4]);
         force = atof(argv[5]);
         source = atof(argv[6]);
-        d = atof(argv[7]);
+        //d = atof(argv[7]);
     }
 
     printf ( "\n\nHow to use this demo:\n\n" );
