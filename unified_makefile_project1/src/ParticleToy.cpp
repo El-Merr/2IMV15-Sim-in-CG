@@ -170,7 +170,7 @@ static void init_system()
             // gravityForce = new GravityForce(pVector); // adding gravity is pretty pointless here
 
             float xPos = 100;
-            float yPos = 450;
+            float yPos = 460;
 
             xGridPos = (int)((       xPos /(float)win_x)*N+1);
             yGridPos = (int)(((win_y-yPos)/(float)win_y)*N+1);
@@ -402,6 +402,18 @@ void handle_mouse() {
         if (objectMouseForce) delete objectMouseForce;
     }
 }
+
+void apply_fluid_particle_force () {
+    int size = pVector.size();
+
+    for(int ii=0; ii< size; ii++)
+    {
+        pVector[ii]->m_Force +=
+                Vec2f(u[(int)IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])],
+                      v[(int)IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])]);
+    }
+}
+
 /*
 ----------------------------------------------------------------------
 OpenGL specific drawing routines
@@ -548,6 +560,8 @@ static void apply_forces ( void )
     if (wall) {
         wall->detectCollision(pVector);
     }
+
+    apply_fluid_particle_force();
 }
 
 static void draw_constraints ( void )
