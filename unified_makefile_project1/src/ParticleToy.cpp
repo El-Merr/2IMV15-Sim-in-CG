@@ -83,6 +83,9 @@ static GravityForce * gravityForce = NULL;
 static std::vector<Object*> objects;
 static std::vector<RigidObject*> rigidObjects;
 
+int xGridPos = 0;
+int yGridPos = 0;
+
 Particle* mouseParticle = NULL;
 DragForce* objectMouseForce = NULL;
 SpringForce* mouseForce = NULL;
@@ -167,8 +170,8 @@ static void init_system(int sceneNr)
             float xPos = 100;
             float yPos = 500;
 
-            int xGridPos = (int)((       xPos /(float)win_x)*N+1);
-            int yGridPos = (int)(((win_y-yPos)/(float)win_y)*N+1);
+            xGridPos = (int)((       xPos /(float)win_x)*N+1);
+            yGridPos = (int)(((win_y-yPos)/(float)win_y)*N+1);
 
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 4; j++) {
@@ -603,6 +606,8 @@ static void get_from_UI (float * d, float * u, float * v)
 
 	}
 
+	//printf("mx-omx: %i\n",mx-omx);
+
 	omx = mx;
 	omy = my;
 }
@@ -732,6 +737,10 @@ static void idle_func ( void )
 
 	if ( dsim ) {
         handle_mouse();
+
+        //propelling force
+        u[IX(xGridPos, 2+yGridPos)] = force * 10; // positive x direction
+
         get_from_UI ( dens_prev, u_prev, v_prev );
         vel_step ( N, u, v, u_prev, v_prev, visc, dt );
         dens_step ( N, dens, dens_prev, u, v, diff, dt );
