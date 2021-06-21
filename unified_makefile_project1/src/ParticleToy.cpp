@@ -111,10 +111,10 @@ static void init_system()
 
     switch(sceneNr) {
         case 0: { //default case
-            std::vector<Vec2f> pointVector;
-            pointVector.push_back(center+Vec2f(-0.1+dist, -0.1));
-            pointVector.push_back(center+Vec2f(0.1+dist, -0.1));
-            pointVector.push_back(center+Vec2f(0.0+dist, 0.1));
+            std::vector <Vec2f> pointVector;
+            pointVector.push_back(center + Vec2f(-0.1 + dist, -0.1));
+            pointVector.push_back(center + Vec2f(0.1 + dist, -0.1));
+            pointVector.push_back(center + Vec2f(0.0 + dist, 0.1));
             objects.push_back(new FixedObject(pointVector));
 
             auto *rigid1 = new RigidObject(Vec2f(0.4, 0.5));
@@ -127,36 +127,38 @@ static void init_system()
             int width = 5;
             int height = 5;
             float dist2 = 0.1;
-            Vec2f start_cloth = Vec2f(dist2, 4*dist);
+            Vec2f start_cloth = Vec2f(dist2, 4 * dist);
             Vec2f r_offset = Vec2f(0.0, dist2);
             // particle grid
             for (int r = 0; r < height; r++) {
                 for (int c = 0; c < width; c++) {
-                    pVector.push_back(new Particle((start_cloth - r_offset*r + Vec2f(dist2, 0.0)*c), defaultMass));
+                    pVector.push_back(new Particle((start_cloth - r_offset * r + Vec2f(dist2, 0.0) * c), defaultMass));
                 }
             }
             int size = pVector.size();
 
             // add spring forces between neighbours
-            for(int ii=0; ii < size - 1; ii++) {
+            for (int ii = 0; ii < size - 1; ii++) {
                 // if particle not in last column
-                if ( (ii+1) % (width) != 0 ) {
+                if ((ii + 1) % (width) != 0) {
                     // connect with particle on the right
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + 1], dist2*2, spring_ks, spring_kd));
+                    springForce.push_back(
+                            new SpringForce(pVector[ii], pVector[ii + 1], dist2 * 2, spring_ks, spring_kd));
                 }
 
                 // if particle not on the bottom row
-                if (ii < size - width ) {
+                if (ii < size - width) {
                     // connect with particle below
-                    springForce.push_back(new SpringForce(pVector[ii], pVector[ii + width], dist2*2, spring_ks, spring_kd));
+                    springForce.push_back(
+                            new SpringForce(pVector[ii], pVector[ii + width], dist2 * 2, spring_ks, spring_kd));
                 }
             }
 
             // hang the cloth on the rail
             const double rail_dist = 0.1;
-            const Vec2f rail_start = Vec2f(-1, pVector[0]->m_Position[1]+rail_dist);
-            const Vec2f rail_end = Vec2f(1, pVector[0]->m_Position[1]+rail_dist);
-            for (int i=0; i < width; i++) {
+            const Vec2f rail_start = Vec2f(-1, pVector[0]->m_Position[1] + rail_dist);
+            const Vec2f rail_end = Vec2f(1, pVector[0]->m_Position[1] + rail_dist);
+            for (int i = 0; i < width; i++) {
                 constraints.push_back(new RailConstraint(pVector[i], rail_start, rail_end, rail_dist));
             }
             constraintSolver = new ConstraintSolver(pVector, constraints);
@@ -164,34 +166,42 @@ static void init_system()
         }
         case 2: {
             float dist2 = 0.1;
-            pVector.push_back(new Particle((center+Vec2f(-dist2, 0.0)), defaultMass));
-            pVector.push_back(new Particle((center+Vec2f(dist2, 0.0)), defaultMass));
-            springForce.push_back(new SpringForce(pVector[0], pVector[1], dist2*2, spring_ks, spring_kd));
+            pVector.push_back(new Particle((center + Vec2f(-dist2, 0.0)), defaultMass));
+            pVector.push_back(new Particle((center + Vec2f(dist2, 0.0)), defaultMass));
+            springForce.push_back(new SpringForce(pVector[0], pVector[1], dist2 * 2, spring_ks, spring_kd));
             // gravityForce = new GravityForce(pVector); // adding gravity is pretty pointless here
 
             float xPos = 100;
             float yPos = 460;
 
-            xGridPos = (int)((       xPos /(float)win_x)*N+1);
-            yGridPos = (int)(((win_y-yPos)/(float)win_y)*N+1);
+            xGridPos = (int) ((xPos / (float) win_x) * N + 1);
+            yGridPos = (int) (((win_y - yPos) / (float) win_y) * N + 1);
 
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 4; j++) {
-                    dens[IX(i+xGridPos, j+yGridPos)] = source;
+                    dens[IX(i + xGridPos, j + yGridPos)] = source;
                 }
             }
             // force
-            u_prev[IX(2+xGridPos, 2+yGridPos)] = force * 1; // positive x direction
+            u_prev[IX(2 + xGridPos, 2 + yGridPos)] = force * 1; // positive x direction
             //v_prev[IX(xGridPos, yGridPos)] = force * (100);
 
             Vec2f propCenter = Vec2f(0.06, 0.5);
 
-            std::vector<Vec2f> pointVector;
-            pointVector.push_back(propCenter+Vec2f(0.0, 0.0));
-            pointVector.push_back(propCenter+Vec2f(0.04, -0.03));
-            pointVector.push_back(propCenter+Vec2f(0.04, 0.03));
+            std::vector <Vec2f> pointVector;
+            pointVector.push_back(propCenter + Vec2f(0.0, 0.0));
+            pointVector.push_back(propCenter + Vec2f(0.04, -0.03));
+            pointVector.push_back(propCenter + Vec2f(0.04, 0.03));
             objects.push_back(new FixedObject(pointVector));
 
+            break;
+        }
+        case 3: {
+            float dist2 = 0.1;
+            pVector.push_back(new Particle((center + Vec2f(dist2, 0.1)), defaultMass));
+            pVector.push_back(new Particle((center + Vec2f(dist2, 0.0)), defaultMass));
+            springForce.push_back(new SpringForce(pVector[0], pVector[1], dist2 * 2, spring_ks, spring_kd));
+            // gravityForce = new GravityForce(pVector); // adding gravity is pretty pointless here
             break;
         }
     }
@@ -358,7 +368,7 @@ void handle_mouse() {
         }
     }
     // if in a scene with only particles
-    if (mouse_down[0] && rigidObjects.size() <= pVector.size()) {
+    if (mouse_down[0] && rigidObjects.size() <= pVector.size() && !sceneNr == 3) {
         // when left mouse button is pressed and held, a spring force is applied between it and a given particle
         if (!hold) {
             // try to find a particle to drag, otherwise there is no particle in the scene
@@ -708,10 +718,11 @@ static void key_func ( unsigned char key, int x, int y )
             init_system();
             break;
 
-//        case '4':
-//            free_data();
-//            init_system(3);
-//            break;
+        case '4':
+            free_data();
+            sceneNr = 3;
+            init_system();
+            break;
 //        case '5':
 //            free_data();
 //            init_system(4);
@@ -766,7 +777,7 @@ static void idle_func ( void )
         handle_mouse();
 
         //propelling force
-        if(sceneNr = 2) u[IX(xGridPos, 2+yGridPos)] = force * 10; // positive x direction
+        if(sceneNr == 2)  { u[IX(xGridPos, 2+yGridPos)] = force * 10; } // positive x direction
 
         get_from_UI ( dens_prev, u_prev, v_prev );
         vel_step ( N, u, v, u_prev, v_prev, visc, dt );
@@ -775,9 +786,9 @@ static void idle_func ( void )
         apply_constraints();
         simulation_step( pVector, dt, slomo, scheme );
         rigid_simulation_step( rigidObjects, dt, slomo, scheme );
-
+        //remap_GUI(); // this line is useless, just sets particles back
 	} else {
-        remap_GUI();
+
 	}
 
 	glutSetWindow ( win_id );
