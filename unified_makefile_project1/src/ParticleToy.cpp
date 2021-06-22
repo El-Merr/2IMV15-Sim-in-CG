@@ -418,9 +418,14 @@ void apply_fluid_particle_force () {
 
     for(int ii=0; ii< size; ii++)
     {
-        pVector[ii]->m_Force +=
-                Vec2f(u[(int)IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])],
-                      v[(int)IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])]);
+        auto density = dens[(int)IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])]; //ranges 0-1
+
+        if ( density > 0 || true ) {
+           // printf("Density at particle pos: %f\n",density);
+            pVector[ii]->m_Force +=
+                    Vec2f(u[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])] * density,
+                          v[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])] * density);
+        }
     }
 }
 
@@ -689,7 +694,11 @@ static void key_func ( unsigned char key, int x, int y )
             break;
         case 's': //slomo mode
         case 'S':
-            slomo = !slomo;
+            if (dt >= 0.09) {
+                dt = 0.04;
+            } else {
+                dt = 0.1;
+            } //printf("dt is now%f\n",dt);
             break;
         // from demo.c
         case 'v':
@@ -787,8 +796,6 @@ static void idle_func ( void )
         simulation_step( pVector, dt, slomo, scheme );
         rigid_simulation_step( rigidObjects, dt, slomo, scheme );
         //remap_GUI(); // this line is useless, just sets particles back
-	} else {
-
 	}
 
 	glutSetWindow ( win_id );
