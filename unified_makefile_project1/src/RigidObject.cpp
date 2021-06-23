@@ -80,7 +80,7 @@ VectorXf RigidObject::get_state()
     state[7] = L[0];
     state[8] = L[1];
 
-    std::cout << "\t old state: \n" << state << "\n";
+//    std::cout << "\t old state: \n" << state << "\n";
     return state;
 }
 
@@ -104,14 +104,13 @@ VectorXf RigidObject::derive_eval()
     state[7] = torque[0];
     state[8] = torque[1];
 
-
     return state;
 
 }
 
 void RigidObject::set_state(VectorXf state)
 {
-    std::cout << "\t new state: \n" << state << "\n";
+//    std::cout << "\t new state: \n" << state << "\n";
     int y = 0;
     position[0] = state[0];
     position[1] = state[1];
@@ -134,11 +133,6 @@ void RigidObject::set_state(VectorXf state)
 
 
 }
-
-/* returns a vector of the velocity and the acceleration */
-//VectorXf RigidObject::derive_eval() {
-//    return pCenter->derive_eval();
-//}
 
 std::vector<Vec2f> RigidObject::get_points() {
     std::vector<Vec2f> worldPoints;
