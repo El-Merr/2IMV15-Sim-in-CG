@@ -109,8 +109,9 @@ static void init_system(int sceneNr)
     objects.push_back(new FixedObject(pointVector));
 //    fixedObjects.push_back(new FixedObject(pointVector));
 
-
-    objects.push_back(new RigidObject(Vec2f(0.4, 0.5)));
+    RigidObject* rb = new RigidObject(Vec2f(0.4, 0.5));
+    objects.push_back(rb);
+    rigidObjects.push_back(rb);
 //    rigidObjects[0]->m_Force += Vec2f(0, 0.000003);
 
 //    std::vector<Vec2f> pointVector3;
@@ -174,6 +175,10 @@ static void clear_data ( void )
 		pVector[ii]->reset();
 	}
 
+	for(RigidObject* rb : rigidObjects) {
+	    rb->reset();
+	}
+
 	//from demo.c
     int i, size2=(N+2)*(N+2);
 
@@ -188,6 +193,10 @@ static void clear_forces ( void )
 
     for(ii=0; ii<size; ii++){
         pVector[ii]->clear_force();
+    }
+
+    for(RigidObject* rb : rigidObjects) {
+        rb->clear_force();
     }
 }
 /**
@@ -423,6 +432,11 @@ static void apply_forces ( void )
     if (wall) {
         wall->detectCollision(pVector);
     }
+
+    for (RigidObject* rb : rigidObjects) {
+        rb->pVector[0]->m_Force = Vec2f(0.5, 0.1);
+        rb->pVector[3]->m_Force = Vec2f(-0.1, -0.2);
+    }
 }
 
 static void draw_constraints ( void )
@@ -623,10 +637,11 @@ static void idle_func ( void )
         apply_forces();
         apply_constraints();
         simulation_step( pVector, dt, slomo, scheme );
+        rigid_simulation_step( rigidObjects, dt, slomo, scheme );
         get_from_UI ( dens_prev, u_prev, v_prev );
         vel_step ( N, u, v, u_prev, v_prev, visc, dt );
         dens_step ( N, dens, dens_prev, u, v, diff, dt );
-        rigid_simulation_step( rigidObjects, dt, slomo, scheme );
+
         remap_GUI();
         //fluid below
 	}
