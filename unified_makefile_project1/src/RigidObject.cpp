@@ -1,26 +1,34 @@
 #include "RigidObject.h"
 #include <GL/glut.h>
 
-RigidObject::RigidObject(Vec2f centerPoint) :
-    construct_position(vec_to_Eigen(centerPoint))
+RigidObject::RigidObject(std::vector<Particle*> particles) :
+    pVector(particles)
 {
     // init particles in body space
-    float offset = 0.05;
-    pVector.push_back( new Particle(Vec2f(-offset, -offset), 1) );
-    pVector.push_back( new Particle(Vec2f(-offset, offset), 1) );
-    pVector.push_back( new Particle(Vec2f(offset, offset), 1) );
-    pVector.push_back( new Particle(Vec2f(offset, -offset), 1) );
+//    float offset = 0.05;
+//    pVector.push_back( new Particle(Vec2f(-offset, -offset), 1) );
+//    pVector.push_back( new Particle(Vec2f(-offset, offset), 1) );
+//    pVector.push_back( new Particle(Vec2f(offset, offset), 1) );
+//    pVector.push_back( new Particle(Vec2f(offset, -offset), 1) );
+
+    calc_center_of_mass();
+
+    //transform particle positions from world to body
+    for (Particle* p : pVector) {
+        p->m_ConstructPos = p->m_Position - Vec2f(construct_position[0], construct_position[1]);
+        p->m_Position = p->m_ConstructPos;
+    }
 
     // init variables
     reset();
 
     // init body
     I_body = Matrix2f::Identity();
-    M = 0.0;
+//    M = 0.0;
     for ( int i=0; i<pVector.size(); i++ ) {
         auto pos = vec_to_Eigen(pVector[i]->m_Position);
         I_body += pos.transpose() * pos  * Matrix2f::Identity() - pos * pos.transpose();
-        M += pVector[i]->m_Mass;
+//        M += pVector[i]->m_Mass;
     }
     I_body_inv = I_body.inverse();
     I_inverse = R * I_body_inv * R.transpose();
@@ -58,6 +66,17 @@ void RigidObject::clear_force()
     for ( int p=0; p < pVector.size(); p++ ) {
         pVector[p]->clear_force();
     }
+}
+
+void RigidObject::calc_center_of_mass() {
+    construct_position = Vector2f(0,0);
+    M = 0.0;
+    for (Particle* p : pVector) {
+        Vec2f pos = p->m_Mass * p->m_Position;
+        construct_position += Vector2f(pos[0], pos[1]);
+        M += p->m_Mass;
+    }
+    construct_position = construct_position / M;
 }
 
 Vector2f RigidObject::vec_to_Eigen( Vec2f v ) {
@@ -161,7 +180,6 @@ void RigidObject::calc_force_and_torque() {
 void RigidObject::calc_aux_variables() {
     Matrix3f rot = q.normalized().toRotationMatrix();
     R = rot.block(0,0,2,2);
-    std::cout << R;
     velocity = P / M;
     I_inverse = R * I_body.inverse() * R.transpose();
     omega = I_inverse * L;

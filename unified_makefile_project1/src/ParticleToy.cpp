@@ -109,7 +109,16 @@ static void init_system(int sceneNr)
     objects.push_back(new FixedObject(pointVector));
 //    fixedObjects.push_back(new FixedObject(pointVector));
 
-    RigidObject* rb = new RigidObject(Vec2f(0.4, 0.5));
+    std::vector<Particle*> rb_points;
+    float rb_offset = 0.05;
+    Vec2f rb_center = Vec2f(0.4, 0.5);
+    rb_points.push_back( new Particle(rb_center + Vec2f(-rb_offset, -rb_offset), 1) );
+    rb_points.push_back( new Particle(rb_center + Vec2f(-rb_offset, rb_offset), 1) );
+    rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, rb_offset), 1) );
+    rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, -rb_offset), 1) );
+
+    RigidObject* rb = new RigidObject(rb_points);
+//    RigidObject* rb = new RigidObject(Vec2f(0.4, 0.5));
     objects.push_back(rb);
     rigidObjects.push_back(rb);
 //    rigidObjects[0]->m_Force += Vec2f(0, 0.000003);

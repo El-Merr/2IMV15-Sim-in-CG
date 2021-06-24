@@ -15,7 +15,7 @@ class RigidObject : public Object {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        RigidObject(Vec2f pointsVector);
+        RigidObject(std::vector<Particle*> particles);
         virtual ~RigidObject(void);
 
         void draw_object() override;
@@ -31,6 +31,7 @@ class RigidObject : public Object {
 
         void clear_force();
         void reset();
+        void calc_center_of_mass();
 
         void calc_force_and_torque();
         void calc_aux_variables();
