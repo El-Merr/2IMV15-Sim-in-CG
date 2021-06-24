@@ -93,7 +93,7 @@ VectorXf RigidObject::derive_eval()
     state[0] = velocity[0];
     state[1] = velocity[1];
 
-    Quaternionf omega_quad(0, omega[0], omega[1], 0);
+    Quaternionf omega_quad(0, omega[0], omega[1], 1);
     Quaternionf qdot( omega_quad * q );
     state[2] = qdot.w() * 50;
     state[3] = qdot.x() * 50;
