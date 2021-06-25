@@ -4,13 +4,8 @@
 RigidObject::RigidObject(std::vector<Particle*> particles) :
     pVector(particles)
 {
-    // init particles in body space
-//    float offset = 0.05;
-//    pVector.push_back( new Particle(Vec2f(-offset, -offset), 1) );
-//    pVector.push_back( new Particle(Vec2f(-offset, offset), 1) );
-//    pVector.push_back( new Particle(Vec2f(offset, offset), 1) );
-//    pVector.push_back( new Particle(Vec2f(offset, -offset), 1) );
 
+    // calculate center point and total mass
     calc_center_of_mass();
 
     //transform particle positions from world to body
@@ -22,13 +17,11 @@ RigidObject::RigidObject(std::vector<Particle*> particles) :
     // init variables
     reset();
 
-    // init body
+    // init body matrix
     I_body = Matrix2f::Identity();
-//    M = 0.0;
     for ( int i=0; i<pVector.size(); i++ ) {
         auto pos = vec_to_Eigen(pVector[i]->m_Position);
         I_body += pos.transpose() * pos  * Matrix2f::Identity() - pos * pos.transpose();
-//        M += pVector[i]->m_Mass;
     }
     I_body_inv = I_body.inverse();
     I_inverse = R * I_body_inv * R.transpose();
@@ -61,7 +54,6 @@ void RigidObject::reset()
 
 void RigidObject::clear_force()
 {
-//    pCenter->clear_force();
     force = Vector2f(0, 0);
     for ( int p=0; p < pVector.size(); p++ ) {
         pVector[p]->clear_force();
@@ -99,7 +91,6 @@ VectorXf RigidObject::get_state()
     state[7] = L[0];
     state[8] = L[1];
 
-//    std::cout << "\t old state: \n" << state << "\n";
     return state;
 }
 
@@ -129,7 +120,7 @@ VectorXf RigidObject::derive_eval()
 
 void RigidObject::set_state(VectorXf state)
 {
-//    std::cout << "\t new state: \n" << state << "\n";
+
     int y = 0;
     position[0] = state[0];
     position[1] = state[1];

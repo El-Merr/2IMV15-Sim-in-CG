@@ -118,10 +118,8 @@ static void init_system(int sceneNr)
     rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, -rb_offset), 1) );
 
     RigidObject* rb = new RigidObject(rb_points);
-//    RigidObject* rb = new RigidObject(Vec2f(0.4, 0.5));
     objects.push_back(rb);
     rigidObjects.push_back(rb);
-//    rigidObjects[0]->m_Force += Vec2f(0, 0.000003);
 
 //    std::vector<Vec2f> pointVector3;
 //    pointVector3.push_back(center+Vec2f(-dist, -dist)-offset);
@@ -442,10 +440,6 @@ static void apply_forces ( void )
         wall->detectCollision(pVector);
     }
 
-    for (RigidObject* rb : rigidObjects) {
-        rb->pVector[0]->m_Force = Vec2f(0.5, 0.1);
-        rb->pVector[3]->m_Force = Vec2f(-0.1, -0.2);
-    }
 }
 
 static void draw_constraints ( void )
