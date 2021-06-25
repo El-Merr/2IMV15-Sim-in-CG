@@ -36,7 +36,7 @@ void RigidObject::reset()
     // init variables
     position = construct_position;
     force = Vector2f(0, 0);
-    torque = Vector2f(0, 0);
+    torque = 0; //Vector2f(0, 0);
     velocity = Vector2f(0, 0);
 
     R = Matrix2f::Identity();
@@ -77,19 +77,23 @@ Vector2f RigidObject::vec_to_Eigen( Vec2f v ) {
 
 VectorXf RigidObject::get_state()
 {
-    VectorXf state(9);
+    VectorXf state(10);
 
     state[0] = position[0];
     state[1] = position[1];
 
-    state[2] = q.w();
-    state[3] = q.x();
-    state[4] = q.y();
+    state[2] = R(0,0);
+    state[3] = R(0,1);
+    state[4] = R(1,0);
+    state[5] = R(1,1);
+//    state[2] = q.w();
+//    state[3] = q.x();
+//    state[4] = q.y();
 
-    state[5] = P[0];
-    state[6] = P[1];
-    state[7] = L[0];
-    state[8] = L[1];
+    state[6] = P[0];
+    state[7] = P[1];
+    state[8] = L[0];
+    state[9] = L[1];
 
     return state;
 }
@@ -98,21 +102,27 @@ VectorXf RigidObject::get_state()
 VectorXf RigidObject::derive_eval()
 {
     calc_force_and_torque();
-    VectorXf state(9);
+    VectorXf state(10);
 
     state[0] = velocity[0];
     state[1] = velocity[1];
 
-    Quaternionf omega_quad(0, omega[0], omega[1], 1);
-    Quaternionf qdot( omega_quad * q );
-    state[2] = qdot.w() * 10;
-    state[3] = qdot.x() * 10;
-    state[4] = qdot.y() * 10;
+//    Quaternionf omega_quad(0, omega[0], omega[1], 1);
+//    Quaternionf qdot( omega_quad * q );
+//    state[2] = qdot.w() * 10;
+//    state[3] = qdot.x() * 10;
+//    state[4] = qdot.y() * 10;
 
-    state[5] = force[0];
-    state[6] = force[1];
-    state[7] = torque[0];
-    state[8] = torque[1];
+    Matrix2f Rdot = omega.matrix() * R;
+    state[2] = Rdot(0,0);
+    state[3] = Rdot(0,1);
+    state[4] = Rdot(1,0);
+    state[5] = Rdot(1,1);
+
+    state[6] = force[0];
+    state[7] = force[1];
+    state[8] = torque;
+    state[9] = torque;
 
 //    std::cout << "eval state: \n" << state << "\n\n";
     return state;
@@ -126,22 +136,26 @@ void RigidObject::set_state(VectorXf state)
     position[0] = state[0];
     position[1] = state[1];
 
-    q.w() = state[2];
-    q.x() = state[3];
-    q.y() = state[4];
+//    q.w() = state[2];
+//    q.x() = state[3];
+//    q.y() = state[4];
+    R(0,0) = state[2];
+    R(0,1) = state[3];
+    R(1,0) = state[4];
+    R(1,1) = state[5];
 
-    P[0] = state[5];
-    P[1] = state[6];
-    L[0] = state[7];
-    L[1] = state[8];
+    P[0] = state[6];
+    P[1] = state[7];
+    L[0] = state[8];
+    L[1] = state[9];
 
-    calc_aux_variables();
+
 
     for (Particle* p : pVector) {
         Vector2f p_pos =  R * vec_to_Eigen(p->m_ConstructPos);
         p->m_Position = Vec2f(p_pos[0], p_pos[1]);
     }
-
+    calc_aux_variables();
 
 }
 
@@ -158,20 +172,20 @@ std::vector<Vec2f> RigidObject::get_points() {
 
 void RigidObject::calc_force_and_torque() {
     force = Vector2f(0, 0);
-    torque = Vector2f(0, 0);
+    torque = 0; //Vector2f(0, 0);
     for ( Particle* p : pVector ) {
         Vector2f p_force = vec_to_Eigen(p->m_Force);
         force += p_force;
         Vector2f rel_pos = vec_to_Eigen(p->m_Position);
 //        Vector3f p_torque = Vector3f(rel_pos[0], rel_pos[1], 0).cross(Vector3f(p_force[0], p_force[1], 0));
         float p_torque = rel_pos[0] * p_force[1] - rel_pos[1] * p_force[0];
-        torque += Vector2f(p_torque, p_torque);
+        torque += p_torque; //Vector2f(p_torque, p_torque);
     }
 }
 
 void RigidObject::calc_aux_variables() {
-    Matrix3f rot = q.normalized().toRotationMatrix();
-    R = rot.block(0,0,2,2);
+//    Matrix3f rot = q.normalized().toRotationMatrix();
+//    R = rot.block(0,0,2,2);
     velocity = P / M;
     I_inverse = R * I_body.inverse() * R.transpose();
     omega = I_inverse * L;

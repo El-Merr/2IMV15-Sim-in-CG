@@ -28,7 +28,8 @@ void compute_rigidObject(RigidObject* rb, float dt) {
     newState[1] = old[1] + dt * new_deriv[1];
     newState[2] = old[2] + dt * new_deriv[2];   // q
     newState[3] = old[3] + dt * new_deriv[3];
-    newState[3] = old[4] + dt * new_deriv[4];
+    newState[4] = old[4] + dt * new_deriv[4];
+    newState[5] = old[5] + dt * new_deriv[5];
     rb->set_state(newState);
 
 
