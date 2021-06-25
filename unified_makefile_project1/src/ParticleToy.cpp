@@ -109,10 +109,17 @@ static void init_system(int sceneNr)
     pointVector.push_back(center+Vec2f(0.0+dist, 0.1));
     objects.push_back(new FixedObject(pointVector));
 
-    auto *rigid1 = new RigidObject(Vec2f(0.4, 0.5));
-    rigidObjects.push_back(rigid1);
-    objects.push_back(rigid1);
+    std::vector<Particle*> rb_points;
+    float rb_offset = 0.05;
+    Vec2f rb_center = Vec2f(0.4, 0.5);
+    rb_points.push_back( new Particle(rb_center + Vec2f(-rb_offset, -rb_offset), 1) );
+    rb_points.push_back( new Particle(rb_center + Vec2f(-rb_offset, rb_offset), 1) );
+    rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, rb_offset), 1) );
+    rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, -rb_offset), 1) );
 
+    RigidObject* rb = new RigidObject(rb_points);
+    objects.push_back(rb);
+    rigidObjects.push_back(rb);
 
 //    std::vector<Vec2f> pointVector3;
 //    pointVector3.push_back(center+Vec2f(-dist, -dist)-offset);
@@ -173,11 +180,9 @@ static void clear_data ( void )
 		pVector[ii]->reset();
 	}
 
-    int j, rigidSize = rigidObjects.size();
-
-    for(j=0; j<rigidSize; j++){
-        rigidObjects[j]->reset();
-    }
+	for(RigidObject* rb : rigidObjects) {
+	    rb->reset();
+	}
 
 	//from demo.c
     int i, size2=(N+2)*(N+2);
@@ -193,6 +198,10 @@ static void clear_forces ( void )
 
     for(ii=0; ii<size; ii++){
         pVector[ii]->clear_force();
+    }
+
+    for(RigidObject* rb : rigidObjects) {
+        rb->clear_force();
     }
 }
 /**
@@ -435,6 +444,7 @@ static void apply_forces ( void )
     if (wall) {
         wall->detectCollision(pVector);
     }
+
 }
 
 static void draw_constraints ( void )
@@ -635,10 +645,11 @@ static void idle_func ( void )
         apply_forces();
         apply_constraints();
         simulation_step( pVector, dt, slomo, scheme );
+        rigid_simulation_step( rigidObjects, dt, slomo, scheme );
         get_from_UI ( dens_prev, u_prev, v_prev );
         vel_step ( N, u, v, u_prev, v_prev, visc, dt );
         dens_step ( N, dens, dens_prev, u, v, diff, dt );
-        rigid_simulation_step( rigidObjects, dt, slomo, scheme );
+
         remap_GUI();
         //fluid below
 	}

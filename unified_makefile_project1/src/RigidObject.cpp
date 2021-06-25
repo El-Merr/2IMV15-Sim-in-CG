@@ -1,82 +1,186 @@
 #include "RigidObject.h"
-#include <vector>
 #include <GL/glut.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <Eigen/Dense>
-#include <Eigen/IterativeLinearSolvers>
-#include <gfx/vec2.h>
 
-RigidObject::RigidObject(Vec2f centerPoint) :
-    m_ConstructPos(centerPoint), center(centerPoint), m_Velocity(Vec2f(0.0, 0.0)), m_Force(Vec2f(0.0, 0.0)), m_Mass(0.01),
-    m_Direction(std::vector<Vec2f>())
+RigidObject::RigidObject(std::vector<Particle*> particles) :
+    pVector(particles)
 {
-    computeBodySpace();
-    m_Direction.push_back(Vec2f(0.0, 0.0));
-    m_Direction.push_back(center);
+
+    // calculate center point and total mass
+    calc_center_of_mass();
+
+    //transform particle positions from world to body
+    for (Particle* p : pVector) {
+        p->m_ConstructPos = p->m_Position - Vec2f(construct_position[0], construct_position[1]);
+        p->m_Position = p->m_ConstructPos;
+    }
+
+    // init variables
+    reset();
+
+    // init body matrix
+    I_body = Matrix2f::Identity();
+    for ( int i=0; i<pVector.size(); i++ ) {
+        auto pos = vec_to_Eigen(pVector[i]->m_Position);
+        I_body += pos.transpose() * pos  * Matrix2f::Identity() - pos * pos.transpose();
+    }
+    I_body_inv = I_body.inverse();
+    I_inverse = R * I_body_inv * R.transpose();
+    omega = I_inverse * L;
+
 }
 
 RigidObject::~RigidObject(void) {}
 
-void RigidObject::computeBodySpace() {
-    float offset = 0.1;
-    points.clear();
-    points.push_back(Vec2f(offset, -offset)); //bottomright
-    points.push_back(Vec2f(offset, offset));  //topright
-    points.push_back(Vec2f(-offset, offset)); //topleft
-    points.push_back(Vec2f(-offset, -offset));//bottomleft
-
-}
-
-std::vector<Vec2f> RigidObject::get_state()
-{
-    std::vector<Vec2f> state;
-    state.push_back(center);
-    state.push_back(m_Velocity);
-    m_Direction[0] = center;
-    return state;
-}
-
-void RigidObject::set_state(Vec2f pos, Vec2f vel)
-{
-    center = pos;
-    m_Velocity = vel;
-    m_Direction[1] = pos;
-}
-
 void RigidObject::reset()
 {
-    center = m_ConstructPos;
-    m_Velocity = Vec2f(0.0, 0.0);
-    m_Force = Vec2f(0.0, 0.0);
-    m_Direction.clear();
+    // init variables
+    position = construct_position;
+    force = Vector2f(0, 0);
+    torque = Vector2f(0, 0);
+    velocity = Vector2f(0, 0);
+
+    R = Matrix2f::Identity();
+    q = Quaternionf(1.0, 0.0, 0.0, 0.0);
+    P = Vector2f(0, 0);
+    L = Vector2f(0, 0);
+
+    I_inverse = I_body_inv;
+    omega = I_inverse * L;
+
+    for ( int p=0; p < pVector.size(); p++ ) {
+        pVector[p]->reset();
+    }
 }
 
 void RigidObject::clear_force()
 {
-    m_Force = Vec2f(0.0, 0.0);
+    force = Vector2f(0, 0);
+    for ( int p=0; p < pVector.size(); p++ ) {
+        pVector[p]->clear_force();
+    }
 }
 
-std::vector<Vec2f> RigidObject::derive_eval() { // returns a vector of the velocity and the acceleration
-    std::vector<Vec2f> eval;
-    eval.push_back(m_Velocity);
-    eval.push_back(m_Force / m_Mass);
-    return eval;
+void RigidObject::calc_center_of_mass() {
+    construct_position = Vector2f(0,0);
+    M = 0.0;
+    for (Particle* p : pVector) {
+        Vec2f pos = p->m_Mass * p->m_Position;
+        construct_position += Vector2f(pos[0], pos[1]);
+        M += p->m_Mass;
+    }
+    construct_position = construct_position / M;
+}
+
+Vector2f RigidObject::vec_to_Eigen( Vec2f v ) {
+    return Vector2f(v[0], v[1]);
+}
+
+VectorXf RigidObject::get_state()
+{
+    VectorXf state(9);
+
+    state[0] = position[0];
+    state[1] = position[1];
+
+    state[2] = q.w();
+    state[3] = q.x();
+    state[4] = q.y();
+
+    state[5] = P[0];
+    state[6] = P[1];
+    state[7] = L[0];
+    state[8] = L[1];
+
+    return state;
+}
+
+/* get ydot state */
+VectorXf RigidObject::derive_eval()
+{
+    calc_force_and_torque();
+    VectorXf state(9);
+
+    state[0] = velocity[0];
+    state[1] = velocity[1];
+
+    Quaternionf omega_quad(0, omega[0], omega[1], 1);
+    Quaternionf qdot( omega_quad * q );
+    state[2] = qdot.w() * 50;
+    state[3] = qdot.x() * 50;
+    state[4] = qdot.y() * 50;
+
+    state[5] = force[0];
+    state[6] = force[1];
+    state[7] = torque[0];
+    state[8] = torque[1];
+
+    return state;
+
+}
+
+void RigidObject::set_state(VectorXf state)
+{
+
+    int y = 0;
+    position[0] = state[0];
+    position[1] = state[1];
+
+    q.w() = state[2];
+    q.x() = state[3];
+    q.y() = state[4];
+
+    P[0] = state[5];
+    P[1] = state[6];
+    L[0] = state[7];
+    L[1] = state[8];
+
+    calc_aux_variables();
+
+    for (Particle* p : pVector) {
+        Vector2f p_pos =  R * vec_to_Eigen(p->m_ConstructPos);
+        p->m_Position = Vec2f(p_pos[0], p_pos[1]);
+    }
+
+
 }
 
 std::vector<Vec2f> RigidObject::get_points() {
     std::vector<Vec2f> worldPoints;
-    for (int i = 0; i < points.size(); i ++) {
-        worldPoints.push_back(Vec2f(center[0]+points[i][0], center[1]+points[i][1]));
+    for (Particle* p : pVector) {
+        worldPoints.push_back(Vec2f(position[0] + p->m_Position[0],
+                                    position[1] + p->m_Position[1]));
     }
     return worldPoints;
+}
+
+
+
+void RigidObject::calc_force_and_torque() {
+    force = Vector2f(0, 0);
+    torque = Vector2f(0, 0);
+    for ( Particle* p : pVector ) {
+        Vector2f p_force = vec_to_Eigen(p->m_Force);
+        force += p_force;
+        Vector2f rel_pos = vec_to_Eigen(p->m_Position);
+//        Vector3f p_torque = Vector3f(rel_pos[0], rel_pos[1], 0).cross(Vector3f(p_force[0], p_force[1], 0));
+        float p_torque = rel_pos[0] * p_force[1] - rel_pos[1] * p_force[0];
+        torque += Vector2f(p_torque, p_torque);
+    }
+}
+
+void RigidObject::calc_aux_variables() {
+    Matrix3f rot = q.normalized().toRotationMatrix();
+    R = rot.block(0,0,2,2);
+    velocity = P / M;
+    I_inverse = R * I_body.inverse() * R.transpose();
+    omega = I_inverse * L;
 }
 
 void RigidObject::draw_object() {
     glColor3f(2.f, 0.7f, 4.f);
     std::vector<Vec2f> worldPoints = get_points();
     glBegin(GL_POLYGON);
-    for (int i = 0; i < points.size(); i ++) {
+    for (int i = 0; i < worldPoints.size(); i ++) {
         glVertex2f(worldPoints[i][0], worldPoints[i][1]);
     }
     glEnd();
