@@ -105,15 +105,16 @@ VectorXf RigidObject::derive_eval()
 
     Quaternionf omega_quad(0, omega[0], omega[1], 1);
     Quaternionf qdot( omega_quad * q );
-    state[2] = qdot.w() * 50;
-    state[3] = qdot.x() * 50;
-    state[4] = qdot.y() * 50;
+    state[2] = qdot.w() * 10;
+    state[3] = qdot.x() * 10;
+    state[4] = qdot.y() * 10;
 
     state[5] = force[0];
     state[6] = force[1];
     state[7] = torque[0];
     state[8] = torque[1];
 
+//    std::cout << "eval state: \n" << state << "\n\n";
     return state;
 
 }

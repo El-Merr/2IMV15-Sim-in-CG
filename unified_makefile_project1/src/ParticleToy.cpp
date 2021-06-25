@@ -258,12 +258,12 @@ void handle_mouse() {
 
                 // find the particle in pVector that is closest to the mouse
                 RigidObject *dragObject = rigidObjects[0];
-                dist = sqrt( pow(mouseParticle->m_Position[0] - dragObject->center[0], 2)
-                                   + pow(mouseParticle->m_Position[1] - dragObject->center[1], 2) );
+                dist = sqrt( pow(mouseParticle->m_Position[0] - dragObject->position[0], 2)
+                                   + pow(mouseParticle->m_Position[1] - dragObject->position[1], 2) );
                 float new_dist = 0;
                 for ( auto p : rigidObjects ) {
-                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - p->center[0], 2)
-                                     + pow(mouseParticle->m_Position[1] - p->center[1], 2) );
+                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - p->position[0], 2)
+                                     + pow(mouseParticle->m_Position[1] - p->position[1], 2) );
                     if (new_dist < dist) {
                         dist = new_dist;
                         dragObject = p;
@@ -444,6 +444,10 @@ static void apply_forces ( void )
     if (wall) {
         wall->detectCollision(pVector);
     }
+
+//    for (auto rb : rigidObjects) {
+//        rb->pVector[0]->m_Force += Vec2f(0.1, 0.2);
+//    }
 
 }
 

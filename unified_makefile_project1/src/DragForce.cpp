@@ -18,26 +18,29 @@ DragForce::~DragForce( void ) {}
  */
 void DragForce::apply_spring()
 {
-    Vec2f p = m_p2->center - m_p1->m_Position;
+    auto rb_points = m_p2->get_points();
+    int i = 0;
+    Vec2f p = rb_points[i] - m_p1->m_Position;
     float length = sqrt(p * p);
     if (length != 0.0) {
-        Vec2f v = m_p2->m_Velocity - m_p1->m_Velocity;
+        Vec2f v = m_p2->pVector[i]->m_Velocity - m_p1->m_Velocity;
         // rest length set to m_dist/2
-        m_DragForce = (m_ks * (length - m_dist/2) + m_kd * ((v * p) / length)) * (p / length);
+        m_DragForce = (m_ks * (length - m_dist/2) + m_kd * ((v * p) / length)) * (p / length) * 1000;
     }
 
-    for (int i = 0; i < 2; i++) {
-        m_p1->m_Force[i] += m_DragForce[i];
-        m_p2->m_Force[i] -= m_DragForce[i];
-    }
+//    printf("DragForce: %f, %f\n", m_DragForce[0], m_DragForce[1]);
+    m_p1->m_Force += m_DragForce;
+    m_p2->pVector[i]->m_Force -= m_DragForce;
+
 }
 
 void DragForce::draw()
 {
-  glBegin( GL_LINES );
-  glColor3f(0.6, 0.7, 0.8);
-  glVertex2f( m_p1->m_Position[0], m_p1->m_Position[1] );
-  glColor3f(0.6, 0.7, 0.8);
-  glVertex2f( m_p2->center[0], m_p2->center[1] );
-  glEnd();
+    auto rb_points = m_p2->get_points();
+    glBegin( GL_LINES );
+    glColor3f(0.6, 0.7, 0.8);
+    glVertex2f( m_p1->m_Position[0], m_p1->m_Position[1] );
+    glColor3f(0.6, 0.7, 0.8);
+    glVertex2f( rb_points[0][0], rb_points[0][1] );
+    glEnd();
 }

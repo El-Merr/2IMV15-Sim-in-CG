@@ -29,13 +29,15 @@ class RigidObject : public Object {
 
         std::vector<Particle*> pVector;
         double M;               // Mass
+        Vector2f position;
+        Vector2f velocity;
+        Vector2f force;
 
     private:
 
-        Vector2f position;
         Vector2f construct_position;
 
-        Vector2f force;
+
         Vector2f torque;
         Matrix2f R;             // rotation
         Quaternionf q;
@@ -44,7 +46,7 @@ class RigidObject : public Object {
         Matrix2f I_body_inv;
         Matrix2f I_inverse;
 
-        Vector2f velocity;
+
         Vector2f omega;         // angular velocity w(t)
         Vector2f P;             // linear momentum
         Vector2f L;             // angular momentum
