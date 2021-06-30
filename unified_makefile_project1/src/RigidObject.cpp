@@ -36,7 +36,7 @@ void RigidObject::reset()
     // init variables
     position = construct_position;
     force = Vector2f(0, 0);
-    torque = 0; //Vector2f(0, 0);
+    torque = Vector2f(0, 0);
     velocity = Vector2f(0, 0);
 
     R = Matrix2f::Identity();
@@ -113,7 +113,14 @@ VectorXf RigidObject::derive_eval()
 //    state[3] = qdot.x() * 10;
 //    state[4] = qdot.y() * 10;
 
-    Matrix2f Rdot = omega.matrix() * R;
+//    std::cout << "R*omega: \n" << (omega*R) << "\n";
+    Matrix2f Rdot = Matrix2f::Zero(); //R * omega;
+    for (int r=0; r<2; r++) {
+        Rdot(0, r) = omega[r] * R(0, 0) + omega[r] * R(0, 1);
+        Rdot(1, r) = omega[r] * R(1, 0) + omega[r] * R(1, 1);
+    }
+    Rdot *= 0.5;
+
     state[2] = Rdot(0,0);
     state[3] = Rdot(0,1);
     state[4] = Rdot(1,0);
@@ -121,8 +128,8 @@ VectorXf RigidObject::derive_eval()
 
     state[6] = force[0];
     state[7] = force[1];
-    state[8] = torque;
-    state[9] = torque;
+    state[8] = torque[0];
+    state[9] = torque[1];
 
 //    std::cout << "eval state: \n" << state << "\n\n";
     return state;
@@ -172,15 +179,24 @@ std::vector<Vec2f> RigidObject::get_points() {
 
 void RigidObject::calc_force_and_torque() {
     force = Vector2f(0, 0);
-    torque = 0; //Vector2f(0, 0);
+    torque = Vector2f(0, 0);
     for ( Particle* p : pVector ) {
         Vector2f p_force = vec_to_Eigen(p->m_Force);
         force += p_force;
         Vector2f rel_pos = vec_to_Eigen(p->m_Position);
 //        Vector3f p_torque = Vector3f(rel_pos[0], rel_pos[1], 0).cross(Vector3f(p_force[0], p_force[1], 0));
-        float p_torque = rel_pos[0] * p_force[1] - rel_pos[1] * p_force[0];
+
+        Vector2f angular_force = Vector2f(0, 0);
+        if (p_force[0] > 0) {
+            angular_force = p_force - rel_pos * (p_force.dot(rel_pos) / rel_pos.dot(p_force));
+        }
+//        float p_torque = rel_pos[0] * p_force[1] - rel_pos[1] * p_force[0];
+        std::cout << "ang: \n" << angular_force << "\n";
+        Vector2f p_torque = angular_force * rel_pos.norm();
+//        std::cout << p_torque << "\n";
         torque += p_torque; //Vector2f(p_torque, p_torque);
     }
+    std::cout << torque << "\n";
 }
 
 void RigidObject::calc_aux_variables() {

@@ -39,7 +39,7 @@ class RigidObject : public Object {
 
 
 //        Vector2f torque;
-        float torque;
+        Vector2f torque;
         Matrix2f R;             // rotation
         Quaternionf q;
 
