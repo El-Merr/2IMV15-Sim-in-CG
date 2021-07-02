@@ -141,12 +141,12 @@ void RigidObject::set_state(VectorXf state)
 
     for (Particle* p : pVector) {
         Vector2f p_pos =  R * vec_to_Eigen(p->m_ConstructPos);
-        // help merel dis is bad (N is default 128 dus vandaar) TODO: replace 128 with N
+        // N is a private global variable now
         if (velocity.norm() <= 0.001) {
             Vector2f world_pos = p_pos + position;
-            int pixel_x = (int)(world_pos[0] * 128);
-            int pixel_y = (int)(world_pos[1] * 128);
-            Vector2f new_world_pos = Vector2f( (float)pixel_x / 128, (float)pixel_y / 128 );
+            int pixel_x = (int)(world_pos[0] * N);
+            int pixel_y = (int)(world_pos[1] * N);
+            Vector2f new_world_pos = Vector2f( (float)pixel_x / N, (float)pixel_y / N );
             Vector2f new_pos = new_world_pos - position;
             p->m_Position = Vec2f(new_pos[0], new_pos[1]);
 
@@ -166,8 +166,6 @@ std::vector<Vec2f> RigidObject::get_points() {
     }
     return worldPoints;
 }
-
-
 
 void RigidObject::calc_force_and_torque() {
     force = Vector2f(0, 0);
