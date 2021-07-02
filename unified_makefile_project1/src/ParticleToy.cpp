@@ -187,6 +187,19 @@ static void init_system()
             //v_prev[IX(xGridPos, yGridPos)] = force * (100);
 
             Vec2f propCenter = Vec2f(0.06, 0.5);
+// =======
+//     std::vector<Particle*> rb_points;
+//     float rb_offset = 0.05;
+//     Vec2f rb_center = Vec2f(0.4, 0.5);
+//     rb_points.push_back( new Particle(rb_center + Vec2f(-rb_offset, -rb_offset), 1) );
+//     rb_points.push_back( new Particle(rb_center + Vec2f(-rb_offset, rb_offset), 1) );
+//     rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, rb_offset), 1) );
+//     rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, -rb_offset), 1) );
+
+//     RigidObject* rb = new RigidObject(rb_points);
+//     objects.push_back(rb);
+//     rigidObjects.push_back(rb);
+// >>>>>>> main
 
             std::vector <Vec2f> pointVector;
             pointVector.push_back(propCenter + Vec2f(0.0, 0.0));
@@ -263,11 +276,9 @@ static void clear_data ( void )
 		pVector[ii]->reset();
 	}
 
-    int j, rigidSize = rigidObjects.size();
-
-    for(j=0; j<rigidSize; j++){
-        rigidObjects[j]->reset();
-    }
+	for(RigidObject* rb : rigidObjects) {
+	    rb->reset();
+	}
 
 //	//from demo.c this is also in free_data but removing it here results in major lagg
     int i, size2=(N+2)*(N+2);
@@ -283,6 +294,10 @@ static void clear_forces ( void )
 
     for(ii=0; ii<size; ii++){
         pVector[ii]->clear_force();
+    }
+
+    for(RigidObject* rb : rigidObjects) {
+        rb->clear_force();
     }
 }
 /**
@@ -339,12 +354,12 @@ void handle_mouse() {
 
                 // find the particle in pVector that is closest to the mouse
                 RigidObject *dragObject = rigidObjects[0];
-                dist = sqrt( pow(mouseParticle->m_Position[0] - dragObject->center[0], 2)
-                                   + pow(mouseParticle->m_Position[1] - dragObject->center[1], 2) );
+                dist = sqrt( pow(mouseParticle->m_Position[0] - dragObject->position[0], 2)
+                                   + pow(mouseParticle->m_Position[1] - dragObject->position[1], 2) );
                 float new_dist = 0;
                 for ( auto p : rigidObjects ) {
-                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - p->center[0], 2)
-                                     + pow(mouseParticle->m_Position[1] - p->center[1], 2) );
+                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - p->position[0], 2)
+                                     + pow(mouseParticle->m_Position[1] - p->position[1], 2) );
                     if (new_dist < dist) {
                         dist = new_dist;
                         dragObject = p;
@@ -585,6 +600,7 @@ static void apply_forces ( void )
     }
 
     apply_fluid_particle_force();
+
 }
 
 static void draw_constraints ( void )
@@ -804,6 +820,7 @@ static void idle_func ( void )
         simulation_step( pVector, dt, slomo, scheme );
         rigid_simulation_step( rigidObjects, dt, slomo, scheme );
         //remap_GUI(); // this line is useless, just sets particles back
+
 	}
 
 	glutSetWindow ( win_id );

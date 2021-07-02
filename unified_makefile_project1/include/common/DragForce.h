@@ -2,6 +2,7 @@
 
 #include "RigidObject.h"
 #include "Particle.h"
+#include <Eigen/Dense>
 
 class DragForce {
  public:
