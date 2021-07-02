@@ -1,6 +1,8 @@
 #include "RigidObject.h"
 #include <GL/glut.h>
 
+#define IX(i,j) ((i)+(N+2)*(j))
+
 RigidObject::RigidObject(std::vector<Particle*> particles) :
     pVector(particles)
 {
@@ -139,9 +141,11 @@ void RigidObject::set_state(VectorXf state)
 
     for (Particle* p : pVector) {
         Vector2f p_pos =  R * vec_to_Eigen(p->m_ConstructPos);
-        p->m_Position = Vec2f(p_pos[0], p_pos[1]);
+        // help merel dis is bad
+        if (velocity.norm() < 0.01) {
+            p->m_Position = Vec2f(((int) p_pos[0] * 128) / 128, ((int) p_pos[1] * 128) / 128);
+        }
     }
-
 
 }
 

@@ -124,7 +124,9 @@ static void init_system()
             rb_points.push_back( new Particle(rb_center + Vec2f(-rb_offset, rb_offset), 1) );
             rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, rb_offset), 1) );
             rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, -rb_offset), 1) );
-            objects.push_back(new RigidObject(rb_points));
+            auto rigid1 = new RigidObject(rb_points);
+            objects.push_back( rigid1 );
+            rigidObjects.push_back( rigid1 );
             break;
         } //end case 0
         case 1: { //cloth in fluid
