@@ -108,7 +108,6 @@ static void init_system(int sceneNr)
     pointVector.push_back(center+Vec2f(0.1+dist, -0.1));
     pointVector.push_back(center+Vec2f(0.0+dist, 0.1));
     objects.push_back(new FixedObject(pointVector));
-
     std::vector<Particle*> rb_points;
     float rb_offset = 0.05;
     Vec2f rb_center = Vec2f(0.4, 0.5);
