@@ -141,7 +141,7 @@ void RigidObject::set_state(VectorXf state)
 
     for (Particle* p : pVector) {
         Vector2f p_pos =  R * vec_to_Eigen(p->m_ConstructPos);
-        // help merel dis is bad
+        // help merel dis is bad (N is default 128 dus vandaar)
         if (velocity.norm() < 0.01) {
             p->m_Position = Vec2f(((int) p_pos[0] * 128) / 128, ((int) p_pos[1] * 128) / 128);
         }
