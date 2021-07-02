@@ -108,7 +108,7 @@ static void init_system()
     const Vec2f center(0.5, 0.5);
     const Vec2f offset(dist, 0.0);
     float defaultMass = 0.01;
-    
+
     switch(sceneNr) {
         case 0: { //default case
             std::vector <Vec2f> pointVector;
@@ -124,7 +124,7 @@ static void init_system()
             rb_points.push_back( new Particle(rb_center + Vec2f(-rb_offset, rb_offset), 1) );
             rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, rb_offset), 1) );
             rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, -rb_offset), 1) );
-
+            objects.push_back(new RigidObject(rb_points));
             break;
         } //end case 0
         case 1: { //cloth in fluid
