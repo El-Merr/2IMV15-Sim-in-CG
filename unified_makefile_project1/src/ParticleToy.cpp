@@ -420,11 +420,19 @@ void apply_fluid_particle_force () {
     {
         auto density = dens[(int)IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])]; //ranges 0-1
 
-        if ( density > 0 || true ) {
-           // printf("Density at particle pos: %f\n",density);
-            pVector[ii]->m_Force +=
-                    Vec2f(u[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])] * density,
-                          v[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])] * density);
+        if ( density > 0 ) {
+            printf("Density at particle pos: %f particle pos: %f,%f:\n",density,pVector[ii]->m_Position[0], pVector[ii]->m_Position[1]);
+           // density = 1;
+            //printf("X velocity at particle pos: %f\n",u[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])] * density);
+
+            Vec2f Velocity = Vec2f(u[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])],
+                                     v[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])]);
+            Vec2f VelocityPrev = Vec2f(u_prev[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])],
+                                     v_prev[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])]);
+
+            Vec2f fluidForce = pVector[ii]->m_Mass * (Velocity-VelocityPrev)/dt; // F = m * a
+
+            pVector[ii]->m_Force += fluidForce * density;
         }
     }
 }
