@@ -15,7 +15,7 @@ class RigidObject : public Object {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        RigidObject(std::vector<Particle*> particles);
+        RigidObject(std::vector<Particle*> particles, int n);
         virtual ~RigidObject(void);
         void draw_object() override;
         std::vector<Vec2f> get_points() override;
@@ -35,7 +35,7 @@ class RigidObject : public Object {
 
     private:
 
-        int N = 128;
+        int N;
 
         Vector2f construct_position;
         Matrix2f R;             // rotation
