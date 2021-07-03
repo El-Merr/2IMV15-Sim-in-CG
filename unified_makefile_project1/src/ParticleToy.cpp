@@ -28,7 +28,8 @@ extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slom
 /* global variables */
 // demo.c these are in FluidSolver.cpp
 extern void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt );
-extern void vel_step ( int N, float * u, float * v, float * u0, float * v0, float * vort, float * n, float visc, float dt );
+extern void vel_step ( int N, float * u, float * v, float * u0, float * v0, float * uAvg, float * vAvg, 
+                       float * uVort, float * vVort, float visc, float dt );
 
 static int N;
 static float dt, d;
@@ -45,7 +46,7 @@ static int dvel;
 static float * u, * v, * u_prev, * v_prev;
 static float * dens, * dens_prev;
 
-static float * vorticity, * normal;
+static float * uAvg, * vAvg, * uVort, * vVort;
 
 
 // spring constants
@@ -125,8 +126,10 @@ static void free_data ( void )
     if ( dens ) free ( dens );
     if ( dens_prev ) free ( dens_prev );
 
-    if ( vorticity ) free ( vorticity );
-    if ( normal ) free ( normal );
+    if ( uAvg ) free ( uAvg );
+    if ( vAvg ) free ( vAvg );
+    if ( uVort ) free ( uVort );
+    if ( vVort ) free ( vVort );
 }
 
 static void clear_data ( void )
@@ -141,7 +144,7 @@ static void clear_data ( void )
     int i, size2=(N+2)*(N+2);
 
     for ( i=0 ; i<size2 ; i++ ) {
-        u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = vorticity[i] = normal[i] = 0.0f;
+        u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = uAvg[i] = vAvg[i] = uVort[i] = vVort[i] = 0.0f;
     }
 }
 
@@ -167,10 +170,12 @@ static int allocate_data ( void )
     dens		= (float *) malloc ( size*sizeof(float) );
     dens_prev	= (float *) malloc ( size*sizeof(float) );
 
-    vorticity	= (float *) malloc ( size*sizeof(float) );
-    normal	    = (float *) malloc ( size*sizeof(float) );
+    uAvg	    = (float *) malloc ( size*sizeof(float) );
+    vAvg	    = (float *) malloc ( size*sizeof(float) );
+    uVort	    = (float *) malloc ( size*sizeof(float) );
+    vVort	    = (float *) malloc ( size*sizeof(float) );
 
-    if ( !u || !v || !u_prev || !v_prev || !dens || !dens_prev || !vorticity || !normal) {
+    if ( !u || !v || !u_prev || !v_prev || !dens || !dens_prev || !uAvg || !vAvg || !uVort || !vVort) {
         fprintf ( stderr, "cannot allocate data\n" );
         return ( 0 );
     }
@@ -601,7 +606,7 @@ static void idle_func ( void )
 	else {
         // demo.c
         get_from_UI ( dens_prev, u_prev, v_prev );
-        vel_step ( N, u, v, u_prev, v_prev, vorticity, normal, visc, dt );
+        vel_step ( N, u, v, u_prev, v_prev, uAvg, vAvg, uVort, vVort, visc, dt );
         dens_step ( N, dens, dens_prev, u, v, diff, dt );
 	    remap_GUI();
 	}
