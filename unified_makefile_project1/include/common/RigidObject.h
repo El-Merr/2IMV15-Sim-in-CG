@@ -37,10 +37,9 @@ class RigidObject : public Object {
 
         Vector2f construct_position;
 
-//        float torque;
         Matrix2f R;             // rotation
-        Quaternionf q;
 
+        // tensor of Inertia
         Matrix2f I_body;
         Matrix2f I_body_inv;
         Matrix2f I_inverse;
@@ -49,11 +48,9 @@ class RigidObject : public Object {
         Vector2f P;             // linear momentum
 
         // angular
-        float torque;
-        float orient;           // radians
-//        Vector2f omega;         // angular velocity w(t)
-        float omega;
-        float L;             // angular momentum
+        float torque;           // angular force
+        float omega;            // angular velocity w(t)
+        float L;                // angular momentum
 
         void calc_center_of_mass();
         void calc_force_and_torque();
@@ -61,8 +58,6 @@ class RigidObject : public Object {
         Vector2f vec_to_Eigen( Vec2f v );
 
         float crossProduct( const Vector2f& a, const Vector2f& b );
-        Vector2f crossProduct( const Vector2f& a, float s );
-        Vector2f crossProduct( float s, const Vector2f& a );
 };
 
 
