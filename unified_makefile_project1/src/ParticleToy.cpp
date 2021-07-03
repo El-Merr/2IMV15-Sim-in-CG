@@ -439,11 +439,6 @@ void handle_mouse() {
 void apply_object_fluid_force () {
 
     for (int i = 0; i < rigidObjects.size(); i++) {
-//        for (Particle *p : rigidObjects[i]->pVector) {
-//            printf("force of particle i: %f\n", p->m_Force[0]);
-//            u[(int)IX(p->m_Position[0]+rigidObjects[i]->position[0]*N, p->m_Position[1]+rigidObjects[i]->position[1]*N)] += p->m_Force[0]*50;
-//            v[(int)IX(p->m_Position[0]+rigidObjects[i]->position[0]*N, p->m_Position[1]+rigidObjects[i]->position[1]*N)] += p->m_Force[1]*50;
-//        }
         printf("force of particle i: %f\n", rigidObjects[i]->velocity[0]);
         u[(int)IX(rigidObjects[i]->position[0]*N, rigidObjects[i]->position[1]*N)] += rigidObjects[i]->velocity[0]*50;
         v[(int)IX(rigidObjects[i]->position[0]*N, rigidObjects[i]->position[1]*N)] += rigidObjects[i]->velocity[1]*50;
