@@ -3,6 +3,11 @@
 #define FOR_EACH_CELL for ( i=1 ; i<=N ; i++ ) { for ( j=1 ; j<=N ; j++ ) {
 #define END_FOR }}
 
+#include <iostream>
+#include <vector>
+#include <stdlib.h>
+#include <stdio.h>
+
 void add_source ( int N, float * x, float * s, float dt )
 {
 	int i, size=(N+2)*(N+2);
@@ -59,21 +64,54 @@ void advect ( int N, int b, float * d, float * d0, float * u, float * v, float d
 	set_bnd ( N, b, d );
 }
 
-void confine ( int N, float * u, float * v, float * u0, float * v0, float * uAvg, float * vAvg )
+void confine ( int N, float eps, float h, float * u, float * v, float * uAvg, float * vAvg )
 {
-    int i, j;
-    float xVorticity, yVorticity;
+    int i, j, uLoc, vLoc;
+    float uVorticity, vVorticity;
+    std::vector<float> uVorticityField, vVorticityField;
 
+    // compute vorticity
     FOR_EACH_CELL
-            uAvg[IX(i,j)] = (u[IX(i-1,j)] + u[IX(i+1,j)])/2; vAvg[IX(i,j)] = (v[IX(i,j-1)] + v[IX(i,j+1)])/2;
+            uAvg[IX(i,j)] = (u[IX(i-1,j)] + u[IX(i+1,j)])/2;
+            vAvg[IX(i,j)] = (v[IX(i,j-1)] + v[IX(i,j+1)])/2;
     END_FOR
 
     FOR_EACH_CELL
-            xVorticity = vAvg[IX(i-1,j)] + vAvg[IX(i+1,j)]/2; yVorticity = uAvg[IX(i,j-1)] + uAvg[IX(i,j+1)]/2;
-//            xLength = -
-
-            u[IX(i,j)] += 0.1*xVorticity; v[IX(i,j)] += 0.1*yVorticity;
+            uVorticity = (vAvg[IX(i-1,j)] + vAvg[IX(i+1,j)])/2;
+            vVorticity = (uAvg[IX(i,j-1)] + uAvg[IX(i,j+1)])/2;
+            uVorticityField[IX(i,j)] = uVorticity;
+            vVorticityField[IX(i,j)] = vVorticity;
     END_FOR
+
+    // compute location vectors
+    FOR_EACH_CELL
+            float left = uVorticityField[IX(i-1,j)];
+            float right = uVorticityField[IX(i+1,j)];
+            float top = vVorticityField[IX(i+1,j)];
+            float bottom = vVorticityField[IX(i-1,j)];
+
+            if (left < right && uVorticityField[IX(i,j)] < right) {
+                uLoc = 1;
+            } else if (right < left && uVorticityField[IX(i,j)] < left) {
+                uLoc = -1;
+            } else {
+                uLoc = 0;
+            }
+
+            if (bottom < top && vVorticityField[IX(i,j)] < top) {
+                vLoc = 1;
+            } else if (top < bottom && vVorticityField[IX(i,j)] < bottom) {
+                vLoc = -1;
+            } else {
+                vLoc = 0;
+            }
+
+            // add force to velocity field
+            u[IX(i,j)] += eps * h *(uVorticityField[IX(i,j)] * uLoc);
+            v[IX(i,j)] += eps * h *(vVorticityField[IX(i,j)] * vLoc);
+    END_FOR
+
+    set_bnd(N, 1, u); set_bnd(N, 2, v);
 }
 
 void project ( int N, float * u, float * v, float * p, float * div )
@@ -109,7 +147,7 @@ void vel_step ( int N, float * u, float * v, float * u0, float * v0, float * vor
 	SWAP ( v0, v ); diffuse ( N, 2, v, v0, visc, dt );
 	project ( N, u, v, u0, v0 );
 	SWAP ( u0, u ); SWAP ( v0, v );
-    confine( N, u, v, u0, v0, vort, n);
+    confine( N, 0.1, 1.0, u, v, vort, n);
 	advect ( N, 1, u, u0, u0, v0, dt ); advect ( N, 2, v, v0, u0, v0, dt );
 	project ( N, u, v, u0, v0 );
 }
