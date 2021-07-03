@@ -35,6 +35,8 @@ class RigidObject : public Object {
 
     private:
 
+        int N = 128;
+
         Vector2f construct_position;
         Matrix2f R;             // rotation
 
