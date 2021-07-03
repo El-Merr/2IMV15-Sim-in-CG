@@ -358,20 +358,47 @@ void handle_mouse() {
                 // create a particle at the mouse position
                 mouseParticle = new Particle(Vec2f(x, y), 0);
 
-                // find the particle in pVector that is closest to the mouse
+                // find the rigidObject that is closest to the mouse
                 RigidObject *dragObject = rigidObjects[0];
                 dist = sqrt( pow(mouseParticle->m_Position[0] - dragObject->position[0], 2)
                                    + pow(mouseParticle->m_Position[1] - dragObject->position[1], 2) );
                 float new_dist = 0;
-                for ( auto p : rigidObjects ) {
-                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - p->position[0], 2)
-                                     + pow(mouseParticle->m_Position[1] - p->position[1], 2) );
+                for ( auto rb : rigidObjects ) {
+                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - rb->position[0], 2)
+                                     + pow(mouseParticle->m_Position[1] - rb->position[1], 2) );
                     if (new_dist < dist) {
                         dist = new_dist;
-                        dragObject = p;
+                        dragObject = rb;
                     }
                 }
-                objectMouseForce = new DragForce(mouseParticle, dragObject, dist, 0.00004, 0.00001);
+
+                // find the particle in dragObject that is closest to the mouse location
+                Particle* dragParticle = dragObject->pVector[0];
+                float p_dist = sqrt( pow(mouseParticle->m_Position[0] -
+                        dragParticle->m_Position[0] + dragObject->position[0], 2)
+                               + pow(mouseParticle->m_Position[1] -
+                               dragParticle->m_Position[1] + dragObject->position[1], 2) );
+                float new_p_dist = 0;
+                for ( auto p : dragObject->pVector ) {
+                    Vec2f world_pos = Vec2f(p->m_Position[0] + dragObject->position[0],
+                                      p->m_Position[1] + dragObject->position[1]);
+                    new_p_dist = sqrt( pow(mouseParticle->m_Position[0] - world_pos[0], 2)
+                                       + pow(mouseParticle->m_Position[1] - world_pos[1], 2) );
+                    if (new_p_dist < p_dist) {
+                        p_dist = new_p_dist;
+                        dragParticle = p;
+                    }
+                }
+
+//                for ( auto p : rigidObjects ) {
+//                    new_dist = sqrt( pow(mouseParticle->m_Position[0] - p->position[0], 2)
+//                                     + pow(mouseParticle->m_Position[1] - p->position[1], 2) );
+//                    if (new_dist < dist) {
+//                        dist = new_dist;
+//                        dragObject = p;
+//                    }
+//                }
+                objectMouseForce = new DragForce(mouseParticle, dragParticle, dragObject, dist, 0.00004, 0.00001);
 
 //                if (!dragState && mouseParticle) {
 //                    delete mouseParticle;
