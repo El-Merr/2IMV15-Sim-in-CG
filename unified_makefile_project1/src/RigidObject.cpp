@@ -1,6 +1,8 @@
 #include "RigidObject.h"
 #include <GL/glut.h>
 
+#define IX(i,j) ((i)+(N+2)*(j))
+
 RigidObject::RigidObject(std::vector<Particle*> particles) :
     pVector(particles)
 {
@@ -142,7 +144,18 @@ void RigidObject::set_state(VectorXf state)
 
     for (Particle* p : pVector) {
         Vector2f p_pos =  R * vec_to_Eigen(p->m_ConstructPos);
-        p->m_Position = Vec2f(p_pos[0], p_pos[1]);
+        // N is a private global variable now
+        if (velocity.norm() <= 0.001) {
+            Vector2f world_pos = p_pos + position;
+            int pixel_x = (int)(world_pos[0] * N);
+            int pixel_y = (int)(world_pos[1] * N);
+            Vector2f new_world_pos = Vector2f( (float)pixel_x / N, (float)pixel_y / N );
+            Vector2f new_pos = new_world_pos - position;
+            p->m_Position = Vec2f(new_pos[0], new_pos[1]);
+
+        } else {
+            p->m_Position = Vec2f(p_pos[0], p_pos[1]);
+        }
     }
 
     calc_aux_variables();
@@ -156,8 +169,6 @@ std::vector<Vec2f> RigidObject::get_points() {
     }
     return worldPoints;
 }
-
-
 
 void RigidObject::calc_force_and_torque() {
     force = Vector2f(0, 0);

@@ -36,7 +36,6 @@ class RigidObject : public Object {
     private:
 
         Vector2f construct_position;
-
         Matrix2f R;             // rotation
 
         // tensor of Inertia
