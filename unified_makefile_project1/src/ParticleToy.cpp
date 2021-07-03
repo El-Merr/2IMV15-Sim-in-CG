@@ -440,14 +440,13 @@ void apply_object_fluid_force () {
 
     for (int i = 0; i < rigidObjects.size(); i++) {
 //        for (Particle *p : rigidObjects[i]->pVector) {
-//            printf("force of particle i: %f\n", rigidObjects[i]->velocity[0]);
-//            u[(int)IX(p->m_Position[0], p->m_Position[1])] += rigidObjects[i]->velocity[0]*50;
-//            v[(int)IX(p->m_Position[0], p->m_Position[1])] += rigidObjects[i]->velocity[1]*50;
+//            printf("force of particle i: %f\n", p->m_Force[0]);
+//            u[(int)IX(p->m_Position[0]+rigidObjects[i]->position[0]*N, p->m_Position[1]+rigidObjects[i]->position[1]*N)] += p->m_Force[0]*50;
+//            v[(int)IX(p->m_Position[0]+rigidObjects[i]->position[0]*N, p->m_Position[1]+rigidObjects[i]->position[1]*N)] += p->m_Force[1]*50;
 //        }
-
         printf("force of particle i: %f\n", rigidObjects[i]->velocity[0]);
-        u[(int)IX(rigidObjects[i]->position[0], rigidObjects[i]->position[1])] += rigidObjects[i]->velocity[0]*50;
-        v[(int)IX(rigidObjects[i]->position[0], rigidObjects[i]->position[1])] += rigidObjects[i]->velocity[1]*50;
+        u[(int)IX(rigidObjects[i]->position[0]*N, rigidObjects[i]->position[1]*N)] += rigidObjects[i]->velocity[0]*50;
+        v[(int)IX(rigidObjects[i]->position[0]*N, rigidObjects[i]->position[1]*N)] += rigidObjects[i]->velocity[1]*50;
     }
 }
 
@@ -837,10 +836,10 @@ static void idle_func ( void )
         if(sceneNr == 2)  { u[IX(xGridPos, 2+yGridPos)] = force * 10; } // positive x direction
 
         get_from_UI ( dens_prev, u_prev, v_prev );
-        apply_object_fluid_force();
         vel_step ( N, u, v, u_prev, v_prev, visc, dt );
         dens_step ( N, dens, dens_prev, u, v, diff, dt );
         apply_forces();
+        apply_object_fluid_force();
         apply_constraints();
         simulation_step( pVector, dt, slomo, scheme );
         rigid_simulation_step( rigidObjects, dt, slomo, scheme );
