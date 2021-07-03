@@ -19,13 +19,13 @@ RigidObject::RigidObject(std::vector<Particle*> particles) :
 
     // init body matrix
     I_body = Matrix2f::Identity();
-    for ( int i=0; i<pVector.size(); i++ ) {
-        auto pos = vec_to_Eigen(pVector[i]->m_Position);
+    for ( auto p : pVector ) {
+        auto pos = vec_to_Eigen(p->m_Position);
         I_body += pos.transpose() * pos  * Matrix2f::Identity() - pos * pos.transpose();
     }
     I_body_inv = I_body.inverse();
     I_inverse = R * I_body_inv * R.transpose();
-    omega = I_inverse * L;
+    omega = 0; //I_inverse * L;
 
 }
 
@@ -36,16 +36,16 @@ void RigidObject::reset()
     // init variables
     position = construct_position;
     force = Vector2f(0, 0);
-    torque = Vector2f(0, 0);
+    torque = 0; //Vector2f(0, 0);
     velocity = Vector2f(0, 0);
 
     R = Matrix2f::Identity();
     q = Quaternionf(1.0, 0.0, 0.0, 0.0);
     P = Vector2f(0, 0);
-    L = Vector2f(0, 0);
+    L = 0;//Vector2f(0, 0);
 
     I_inverse = I_body_inv;
-    omega = I_inverse * L;
+    omega = 0; //I_inverse * L;
 
     for ( int p=0; p < pVector.size(); p++ ) {
         pVector[p]->reset();
@@ -77,7 +77,7 @@ Vector2f RigidObject::vec_to_Eigen( Vec2f v ) {
 
 VectorXf RigidObject::get_state()
 {
-    VectorXf state(10);
+    VectorXf state(9);
 
     state[0] = position[0];
     state[1] = position[1];
@@ -86,14 +86,10 @@ VectorXf RigidObject::get_state()
     state[3] = R(0,1);
     state[4] = R(1,0);
     state[5] = R(1,1);
-//    state[2] = q.w();
-//    state[3] = q.x();
-//    state[4] = q.y();
 
     state[6] = P[0];
     state[7] = P[1];
-    state[8] = L[0];
-    state[9] = L[1];
+    state[8] = L;
 
     return state;
 }
@@ -102,24 +98,28 @@ VectorXf RigidObject::get_state()
 VectorXf RigidObject::derive_eval()
 {
     calc_force_and_torque();
-    VectorXf state(10);
+    VectorXf state(9);
 
     state[0] = velocity[0];
     state[1] = velocity[1];
-
-//    Quaternionf omega_quad(0, omega[0], omega[1], 1);
-//    Quaternionf qdot( omega_quad * q );
-//    state[2] = qdot.w() * 10;
-//    state[3] = qdot.x() * 10;
-//    state[4] = qdot.y() * 10;
-
-//    std::cout << "R*omega: \n" << (omega*R) << "\n";
+    
     Matrix2f Rdot = Matrix2f::Zero(); //R * omega;
-    for (int r=0; r<2; r++) {
-        Rdot(0, r) = omega[r] * R(0, 0) + omega[r] * R(0, 1);
-        Rdot(1, r) = omega[r] * R(1, 0) + omega[r] * R(1, 1);
-    }
-    Rdot *= 0.5;
+//    for (int r=0; r<2; r++) {
+//        Rdot(0, r) = omega[r] * R(0, 0) + omega[r] * R(0, 1);
+//        Rdot(1, r) = omega[r] * R(1, 0) + omega[r] * R(1, 1);
+//    }
+//    Rdot *= 0.5;
+
+    float angle = std::acos(omega);
+    printf("omega: %f       angle: %f\n", omega, angle);
+//    printf("angle: %f,  cos: %f\n", angle, (float)std::cos(angle));
+    Matrix2f rot = Matrix2f::Zero();
+    rot(0,0) = 0;//std::cos(angle);
+    rot(0,1) = -std::sin(omega*10);
+    rot(1,0) = std::sin(omega*10);
+    rot(1,1) = 0; //std::cos(angle);
+//    Rdot = R;
+    Rdot = R * rot;
 
     state[2] = Rdot(0,0);
     state[3] = Rdot(0,1);
@@ -128,8 +128,7 @@ VectorXf RigidObject::derive_eval()
 
     state[6] = force[0];
     state[7] = force[1];
-    state[8] = torque[0];
-    state[9] = torque[1];
+    state[8] = torque;
 
 //    std::cout << "eval state: \n" << state << "\n\n";
     return state;
@@ -143,9 +142,6 @@ void RigidObject::set_state(VectorXf state)
     position[0] = state[0];
     position[1] = state[1];
 
-//    q.w() = state[2];
-//    q.x() = state[3];
-//    q.y() = state[4];
     R(0,0) = state[2];
     R(0,1) = state[3];
     R(1,0) = state[4];
@@ -153,8 +149,7 @@ void RigidObject::set_state(VectorXf state)
 
     P[0] = state[6];
     P[1] = state[7];
-    L[0] = state[8];
-    L[1] = state[9];
+    L = state[8];
 
 
 
@@ -162,8 +157,8 @@ void RigidObject::set_state(VectorXf state)
         Vector2f p_pos =  R * vec_to_Eigen(p->m_ConstructPos);
         p->m_Position = Vec2f(p_pos[0], p_pos[1]);
     }
-    calc_aux_variables();
 
+    calc_aux_variables();
 }
 
 std::vector<Vec2f> RigidObject::get_points() {
@@ -179,24 +174,27 @@ std::vector<Vec2f> RigidObject::get_points() {
 
 void RigidObject::calc_force_and_torque() {
     force = Vector2f(0, 0);
-    torque = Vector2f(0, 0);
+    torque = 0; //Vector2f(0, 0);
     for ( Particle* p : pVector ) {
         Vector2f p_force = vec_to_Eigen(p->m_Force);
         force += p_force;
         Vector2f rel_pos = vec_to_Eigen(p->m_Position);
 //        Vector3f p_torque = Vector3f(rel_pos[0], rel_pos[1], 0).cross(Vector3f(p_force[0], p_force[1], 0));
-
-        Vector2f angular_force = Vector2f(0, 0);
-        if (p_force[0] > 0) {
-            angular_force = p_force - rel_pos * (p_force.dot(rel_pos) / rel_pos.dot(p_force));
-        }
+//        Vector2f perp_r = Vector2f(-rel_pos[1], rel_pos[0]);
+//        Vector2f angular_force = Vector2f(0, 0);
+//        if (p_force[0] > 0) {
+//            angular_force = p_force - rel_pos * (p_force.dot(rel_pos) / rel_pos.dot(p_force));
+//        }
 //        float p_torque = rel_pos[0] * p_force[1] - rel_pos[1] * p_force[0];
-        std::cout << "ang: \n" << angular_force << "\n";
-        Vector2f p_torque = angular_force * rel_pos.norm();
-//        std::cout << p_torque << "\n";
-        torque += p_torque; //Vector2f(p_torque, p_torque);
+//        std::cout << "ang: \n" << angular_force << "\n";
+//        Vector2f p_torque = p_force - rel_pos * (p_force.dot(rel_pos) / rel_pos.dot(p_force)); //Vector2f(rel_pos.dot(p_force), rel_pos.dot(p_force));
+////        std::cout << p_torque << "\n";
+//        float p_torque = rel_pos.dot(p_force);
+
+        float p_torque = crossProduct( rel_pos, p_force );
+        torque += p_torque; //Vector2f(p_torque[0], p_torque[1]);
     }
-    std::cout << torque << "\n";
+//    std::cout << torque << "\n";
 }
 
 void RigidObject::calc_aux_variables() {
@@ -204,7 +202,25 @@ void RigidObject::calc_aux_variables() {
 //    R = rot.block(0,0,2,2);
     velocity = P / M;
     I_inverse = R * I_body.inverse() * R.transpose();
-    omega = I_inverse * L;
+    omega = I_inverse.norm() * L ; //I_inverse * L;
+}
+
+// Two crossed vectors return a scalar
+float RigidObject::crossProduct( const Vector2f& a, const Vector2f& b )
+{
+    return a[0] * b[1] - a[1] * b[0];
+}
+
+// More exotic (but necessary) forms of the cross product
+// with a vector a and scalar s, both returning a vector
+Vector2f RigidObject::crossProduct( const Vector2f& a, float s )
+{
+    return Vector2f( s * a[1], -s * a[0] );
+}
+
+Vector2f RigidObject::crossProduct( float s, const Vector2f& a )
+{
+    return Vector2f( -s * a[1], s * a[0] );
 }
 
 void RigidObject::draw_object() {
