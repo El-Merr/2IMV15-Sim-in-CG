@@ -265,28 +265,22 @@ static void free_data ( void )
         wall = NULL;
     }
     //from demo.c
-    if ( u ) free ( u );
-    if ( v ) free ( v );
-    if ( u_prev ) free ( u_prev );
-    if ( v_prev ) free ( v_prev );
-    if ( dens ) free ( dens );
-    if ( dens_prev ) free ( dens_prev );
-
-    if ( uVort ) free ( uVort );
-    if ( vVort ) free ( vVort );
-
-    //from demo.c this way the fluid clears between scene transitions.
-    int i, size2=(N+2)*(N+2);
-    for ( i=0 ; i<size2 ; i++ ) {
-        u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = 0.0f;
-    }
-    // This crashes the program every time
-    // if ( u ) free ( u );
+//    if ( u ) free ( u );
 //    if ( v ) free ( v );
 //    if ( u_prev ) free ( u_prev );
 //    if ( v_prev ) free ( v_prev );
 //    if ( dens ) free ( dens );
 //    if ( dens_prev ) free ( dens_prev );
+//
+//    if ( uVort ) free ( uVort );
+//    if ( vVort ) free ( vVort );
+
+    //from demo.c this way the fluid clears between scene transitions.
+    int i, size2=(N+2)*(N+2);
+    for ( i=0 ; i<size2 ; i++ ) {
+        u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = uVort[i] = vVort[i] = 0.0f;
+    }
+
 }
 
 static void clear_data ( void )
