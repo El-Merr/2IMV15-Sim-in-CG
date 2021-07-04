@@ -218,8 +218,8 @@ static void init_system()
         case 3: {
             float dist2 = 0.1;
             pVector.push_back(new Particle((center + Vec2f(dist2, 0.1)), defaultMass));
-            pVector.push_back(new Particle((center + Vec2f(dist2, 0.0)), defaultMass));
-            springForce.push_back(new SpringForce(pVector[0], pVector[1], dist2 * 2, spring_ks, spring_kd));
+           // pVector.push_back(new Particle((center + Vec2f(dist2, 0.0)), defaultMass));
+          //  springForce.push_back(new SpringForce(pVector[0], pVector[1], dist2 * 2, spring_ks, spring_kd));
             // gravityForce = new GravityForce(pVector); // adding gravity is pretty pointless here
             break;
         }
@@ -407,7 +407,7 @@ void handle_mouse() {
                 printf("There is no object to drag");
             }
         }
-        if (dist <= 0.15 || dragState) {
+        if (dist <= 0.10 || dragState) {
             // create springforce between mouse and closest particle
 
             mouseParticle->set_state(Vec2f(x, y), Vec2f(0.0, 0.0));
@@ -460,23 +460,45 @@ void handle_mouse() {
         if (objectMouseForce) delete objectMouseForce;
     }
 }
+/** Two way coupling.
+ * Applies a force to fluid that comes in contact with a moving rigid object. and vice versa
+ */
+void apply_two_way_coupling () {
+
+    auto u_temp = u;
+    auto v_temp = v;
+
+    for (int i = 0; i < rigidObjects.size(); i++) {
+
+        for ( Particle *p : rigidObjects[i]->pVector ) {
+            //printf("force of particle p: %f\n", 10*u_temp[IX((int)((rigidObjects[i]->position[0] + p->m_Position[0])*N), (int)(rigidObjects[i]->position[1])*N)]);
+            int particleCoords = IX((int)((rigidObjects[i]->position[0] + p->m_Position[0]) * N),
+                                    (int)((rigidObjects[i]->position[1] + p->m_Position[1]) * N));
+            // object to fluid coupling
+            u[particleCoords] += rigidObjects[i]->velocity[0] * 10;
+            v[particleCoords] += rigidObjects[i]->velocity[1] * 10;
+            // fluid to object coupling
+            p->m_Force[0] += u_temp[particleCoords] * dens[particleCoords];
+            p->m_Force[1] += v_temp[particleCoords] * dens[particleCoords];
+        }
+    }
+}
 
 void apply_fluid_particle_force () {
     int size = pVector.size();
 
     for(int ii=0; ii< size; ii++)
     {
-        auto density = dens[(int)IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])]; //ranges 0-1
+        int coords = IX((int)(pVector[ii]->m_Position[0]*N), (int)(pVector[ii]->m_Position[1]*N));
+        auto density = dens[coords]; //ranges 0-1
 
         if ( density > 0 ) {
-            printf("Density at particle pos: %f particle pos: %f,%f:\n",density,pVector[ii]->m_Position[0], pVector[ii]->m_Position[1]);
+            //printf("Density at particle pos: %f particle pos: %f,%f:\n",density,pVector[ii]->m_Position[0], pVector[ii]->m_Position[1]);
            // density = 1;
             //printf("X velocity at particle pos: %f\n",u[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])] * density);
 
-            Vec2f Velocity = Vec2f(u[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])],
-                                     v[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])]);
-            Vec2f VelocityPrev = Vec2f(u_prev[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])],
-                                     v_prev[(int) IX(pVector[ii]->m_Position[0], pVector[ii]->m_Position[1])]);
+            Vec2f Velocity = Vec2f(u[coords], v[coords]);
+            Vec2f VelocityPrev = Vec2f(u_prev[coords], v_prev[coords]);
 
             Vec2f fluidForce = pVector[ii]->m_Mass * (Velocity-VelocityPrev)/dt; // F = m * a
 
@@ -627,6 +649,7 @@ static void apply_forces ( void )
         if(mouseForce) mouseForce->apply_spring();
         if(objectMouseForce) objectMouseForce->apply_spring();
     }
+
 
     if (wall) {
         wall->detectCollision(pVector);
@@ -843,12 +866,13 @@ static void idle_func ( void )
         handle_mouse();
 
         //propelling force
-        if(sceneNr == 2)  { u[IX(xGridPos, 2+yGridPos)] = force * 10; } // positive x direction
+        if(sceneNr == 2)  { u[IX(xGridPos, 2+yGridPos)] = force; } // positive x direction
 
         get_from_UI ( dens_prev, u_prev, v_prev );
         vel_step ( N, u, v, u_prev, v_prev, visc, dt );
         dens_step ( N, dens, dens_prev, u, v, diff, dt );
         apply_forces();
+        apply_two_way_coupling();
         apply_constraints();
         simulation_step( pVector, dt, slomo, scheme );
         rigid_simulation_step( rigidObjects, dt, slomo, scheme );
