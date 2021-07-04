@@ -9,7 +9,6 @@ public:
 
 	Particle(const Vec2f & ConstructPos, float mass);
 	virtual ~Particle(void);
-
 	void reset();
 	void clear_force();
 	void draw();

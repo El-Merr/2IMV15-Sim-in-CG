@@ -17,8 +17,10 @@ SpringForce::~SpringForce(void) {}
  */
 void SpringForce::apply_spring()
 {
+   // printf("apply spring %f\n", *m_p1);
     Vec2f p = m_p2->m_Position - m_p1->m_Position;
     float length = sqrt(p * p);
+
     if (length != 0.0) {
         Vec2f v = m_p2->m_Velocity - m_p1->m_Velocity;
         // rest length set to m_dist/2
