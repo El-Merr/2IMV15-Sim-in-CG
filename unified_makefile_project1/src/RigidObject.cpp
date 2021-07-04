@@ -160,8 +160,8 @@ void RigidObject::set_state(VectorXf state)
 std::vector<Vec2f> RigidObject::get_points() {
     std::vector<Vec2f> worldPoints;
     for (Particle* p : pVector) {
-        worldPoints.push_back(Vec2f(position[0] + p->m_Position[0],
-                                    position[1] + p->m_Position[1]));
+        worldPoints.push_back(Vec2f(position[0] + p->m_Position[0] * 0.9,
+                                    position[1] + p->m_Position[1] * 0.9));
     }
     return worldPoints;
 }
