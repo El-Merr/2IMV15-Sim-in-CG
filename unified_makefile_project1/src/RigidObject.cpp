@@ -143,7 +143,7 @@ void RigidObject::set_state(VectorXf state)
     L = state[8];
 
     // snap to grid when coming to a halt
-    if (velocity.norm() <= 0.001) {
+    if (velocity.norm() <= 0.00001) {
         int pixel_x = (int)(position[0] * N);
         int pixel_y = (int)(position[1] * N);
         position = Vector2f((float) pixel_x / N, (float) pixel_y / N);

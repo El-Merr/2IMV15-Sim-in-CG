@@ -21,9 +21,13 @@
 #include <stdio.h>
 #include <GL/glut.h>
 #include <iostream>
+#include <gfx/mat2.h>
+
+#include <Eigen/Dense>
 
 
 #define IX(i,j) ((i)+(N+2)*(j))
+#define PI 3.1415926535897932384626433832795
 
 /* macros */
 
@@ -226,6 +230,56 @@ static void init_system()
            // pVector.push_back(new Particle((center + Vec2f(dist2, 0.0)), defaultMass));
           //  springForce.push_back(new SpringForce(pVector[0], pVector[1], dist2 * 2, spring_ks, spring_kd));
             // gravityForce = new GravityForce(pVector); // adding gravity is pretty pointless here
+            break;
+        }
+        case 4: {
+            // rigid object 1: square
+            std::vector<Particle*> rb_points;
+            float rb_offset = 0.05;
+            Vec2f rb_center = Vec2f(0.4, 0.5);
+            rb_points.push_back( new Particle(rb_center + Vec2f(-rb_offset, -rb_offset), 1) );
+            rb_points.push_back( new Particle(rb_center + Vec2f(-rb_offset, rb_offset), 1) );
+            rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, rb_offset), 1) );
+            rb_points.push_back( new Particle(rb_center + Vec2f(rb_offset, -rb_offset), 1) );
+            auto rigid1 = new RigidObject(rb_points, N);
+            objects.push_back( rigid1 );
+            rigidObjects.push_back( rigid1 );
+
+            // rigid object 2: hexagon
+            std::vector<Particle*> rb2_points;
+            Vector2f rb2_offset = Vector2f(0.06, 0);
+            float angle = 360/6 * PI / 180;
+            Vec2f rb2_center = Vec2f(0.7, 0.5);
+            for (int i=0; i<6; i++) {
+                Matrix2f rb2_rot = Matrix2f::Zero();
+                rb2_rot(0,0) = std::cos(angle*i);
+                rb2_rot(0,1) = -std::sin(angle*i);
+                rb2_rot(1,0) = std::sin(angle*i);
+                rb2_rot(1,1) = std::cos(angle*i);
+                Vector2f x = rb2_rot * rb2_offset;
+                rb2_points.push_back( new Particle(rb2_center + Vec2f(x[0], x[1]), 1) );
+            }
+            auto rigid2 = new RigidObject(rb2_points, N);
+            objects.push_back( rigid2 );
+            rigidObjects.push_back( rigid2 );
+
+            // rigid object 3: part octagon
+            std::vector<Particle*> rb3_points;
+            Vector2f rb3_offset = Vector2f(0.06, 0);
+            float angle3 = 360/8 * PI / 180;
+            Vec2f rb3_center = Vec2f(0.2, 0.5);
+            for (int i=0; i<6; i++) {
+                Matrix2f rb3_rot = Matrix2f::Zero();
+                rb3_rot(0,0) = std::cos(angle3*i);
+                rb3_rot(0,1) = -std::sin(angle3*i);
+                rb3_rot(1,0) = std::sin(angle3*i);
+                rb3_rot(1,1) = std::cos(angle3*i);
+                Vector2f x3 = rb3_rot * rb3_offset;
+                rb3_points.push_back( new Particle(rb3_center + Vec2f(x3[0], x3[1]), 1) );
+            }
+            auto rigid3 = new RigidObject(rb3_points, N);
+            objects.push_back( rigid3 );
+            rigidObjects.push_back( rigid3 );
             break;
         }
     }
@@ -830,10 +884,11 @@ static void key_func ( unsigned char key, int x, int y )
             sceneNr = 3;
             init_system();
             break;
-//        case '5':
-//            free_data();
-//            init_system(4);
-//            break;
+        case '5':
+            free_data();
+            sceneNr = 4;
+            init_system();
+            break;
 //
 //        case 'e':
 //        case 'E':
