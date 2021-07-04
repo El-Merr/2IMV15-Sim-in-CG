@@ -28,8 +28,8 @@ extern void simulation_step( std::vector<Particle*> pVector, float dt, bool slom
 /* global variables */
 // demo.c these are in FluidSolver.cpp
 extern void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt );
-extern void vel_step ( int N, float * u, float * v, float * u0, float * v0, float * uAvg, float * vAvg, 
-                       float * uVort, float * vVort, float visc, float dt );
+extern void vel_step ( int N, float * u, float * v, float * u0, float * v0,
+                       float * uVort, float * vVort, float visc, float dt, float eps, bool vc );
 
 static int N;
 static float dt, d;
@@ -46,8 +46,9 @@ static int dvel;
 static float * u, * v, * u_prev, * v_prev;
 static float * dens, * dens_prev;
 
-static float * uAvg, * vAvg, * uVort, * vVort;
+static float * uVort, * vVort;
 
+static float eps = 10.0;
 
 // spring constants
 static float spring_ks = 0.01;
@@ -66,6 +67,7 @@ static int hmx, hmy;
 bool slomo = false;
 bool gravityArrows = false;
 bool gravityActive = true;
+bool vc = true; // Vorticity confinement
 
 static std::vector<Constraint*> constraints;
 static ConstraintSolver* constraintSolver = NULL;
@@ -126,8 +128,6 @@ static void free_data ( void )
     if ( dens ) free ( dens );
     if ( dens_prev ) free ( dens_prev );
 
-    if ( uAvg ) free ( uAvg );
-    if ( vAvg ) free ( vAvg );
     if ( uVort ) free ( uVort );
     if ( vVort ) free ( vVort );
 }
@@ -144,7 +144,7 @@ static void clear_data ( void )
     int i, size2=(N+2)*(N+2);
 
     for ( i=0 ; i<size2 ; i++ ) {
-        u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = uAvg[i] = vAvg[i] = uVort[i] = vVort[i] = 0.0f;
+        u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = uVort[i] = vVort[i] = 0.0f;
     }
 }
 
@@ -170,12 +170,10 @@ static int allocate_data ( void )
     dens		= (float *) malloc ( size*sizeof(float) );
     dens_prev	= (float *) malloc ( size*sizeof(float) );
 
-    uAvg	    = (float *) malloc ( size*sizeof(float) );
-    vAvg	    = (float *) malloc ( size*sizeof(float) );
     uVort	    = (float *) malloc ( size*sizeof(float) );
     vVort	    = (float *) malloc ( size*sizeof(float) );
 
-    if ( !u || !v || !u_prev || !v_prev || !dens || !dens_prev || !uAvg || !vAvg || !uVort || !vVort) {
+    if ( !u || !v || !u_prev || !v_prev || !dens || !dens_prev || !uVort || !vVort) {
         fprintf ( stderr, "cannot allocate data\n" );
         return ( 0 );
     }
@@ -524,6 +522,10 @@ static void key_func ( unsigned char key, int x, int y )
         case 'V':
             dvel = !dvel;
             break;
+        case 'r':
+        case 'R':
+            vc = !vc;
+            break;
         case ' ':
             dsim = !dsim;
             break;
@@ -606,7 +608,8 @@ static void idle_func ( void )
 	else {
         // demo.c
         get_from_UI ( dens_prev, u_prev, v_prev );
-        vel_step ( N, u, v, u_prev, v_prev, uAvg, vAvg, uVort, vVort, visc, dt );
+        vel_step ( N, u, v, u_prev, v_prev, uVort, vVort, visc, dt,
+                   eps, vc );
         dens_step ( N, dens, dens_prev, u, v, diff, dt );
 	    remap_GUI();
 	}
@@ -686,23 +689,23 @@ int main ( int argc, char ** argv )
 	glutInit ( &argc, argv );
 
 
-	printf ( "\n\nHow to use this application:\n\n" );
+//	printf ( "\n\nHow to use this application:\n\n" );
 
-    printf ( "To change scenes, use the number keys 1-4\n\n" );
-
-    printf ( "To change integration schemes:\n" );
-    printf ( "\t Switch to the Euler method with the 'e' key\n" );
-    printf ( "\t Switch to the Mid-point method with the 'm' key\n" );
-    printf ( "\t Switch to the Runge-Kutta 4 method with the 'r' key\n" );
-
-    printf ( "Other controls:\n" );
-	printf ( "\t Toggle construction/simulation display with the spacebar key\n" );
-    printf ( "\t Toggle slow-motion with the 's' key\n" );
-    printf ( "\t Toggle gravity with the 'h' key\n" );
-    printf ( "\t Toggle gravity force arrows with the 'g' key\n" );
-    printf ( "\t Reset the particles with the 'c' key\n" );
-	printf ( "\t Dump frames by pressing the 'd' key\n" );
-	printf ( "\t Quit by pressing the 'q' key\n" );
+//    printf ( "To change scenes, use the number keys 1-4\n\n" );
+//
+//    printf ( "To change integration schemes:\n" );
+//    printf ( "\t Switch to the Euler method with the 'e' key\n" );
+//    printf ( "\t Switch to the Mid-point method with the 'm' key\n" );
+//    printf ( "\t Switch to the Runge-Kutta 4 method with the 'r' key\n" );
+//
+//    printf ( "Other controls:\n" );
+//	printf ( "\t Toggle construction/simulation display with the spacebar key\n" );
+//    printf ( "\t Toggle slow-motion with the 's' key\n" );
+//    printf ( "\t Toggle gravity with the 'h' key\n" );
+//    printf ( "\t Toggle gravity force arrows with the 'g' key\n" );
+//    printf ( "\t Reset the scene with the 'c' key\n" );
+//	printf ( "\t Dump frames by pressing the 'd' key\n" );
+//	printf ( "\t Quit by pressing the 'q' key\n" );
 
 	dsim = 0;
 	dump_frames = 0;
@@ -746,6 +749,7 @@ int main ( int argc, char ** argv )
     printf ( "\t Add densities with the right mouse button\n" );
     printf ( "\t Add velocities with the left mouse button and dragging the mouse\n" );
     printf ( "\t Toggle density/velocity display with the 'v' key\n" );
+    printf ( "\t Toggle vorticity confinement with the 'r' key\n" );
     printf ( "\t Clear the simulation by pressing the 'c' key\n" );
     printf ( "\t Quit by pressing the 'q' key\n" );
 

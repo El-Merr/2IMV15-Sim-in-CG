@@ -61,21 +61,15 @@ void advect ( int N, int b, float * d, float * d0, float * u, float * v, float d
 	set_bnd ( N, b, d );
 }
 
-void confine ( int N, float eps, float h, float * u, float * v, float * uAvg, float * vAvg, 
-               float * uVort, float * vVort )
+void confine ( int N, float eps, float * u, float * v, float * uVort, float * vVort )
 {
     int i, j, uLoc, vLoc;
     float uVorticity, vVorticity;
 
     // compute vorticity
     FOR_EACH_CELL
-            uAvg[IX(i,j)] = (u[IX(i-1,j)] + u[IX(i+1,j)])/2;
-            vAvg[IX(i,j)] = (v[IX(i,j-1)] + v[IX(i,j+1)])/2;
-    END_FOR
-
-    FOR_EACH_CELL
-            uVorticity = (vAvg[IX(i-1,j)] + vAvg[IX(i+1,j)])/2;
-            vVorticity = (uAvg[IX(i,j-1)] + uAvg[IX(i,j+1)])/2;
+            uVorticity = (v[IX(i+1,j)] - v[IX(i-1,j)])/2;
+            vVorticity = (u[IX(i,j+1)] - u[IX(i,j-1)])/2;
             uVort[IX(i,j)] = uVorticity;
             vVort[IX(i,j)] = vVorticity;
     END_FOR
@@ -104,8 +98,8 @@ void confine ( int N, float eps, float h, float * u, float * v, float * uAvg, fl
             }
 
             // add force to velocity field
-            u[IX(i,j)] += eps * h *(uVort[IX(i,j)] * (float)uLoc);
-            v[IX(i,j)] += eps * h *(vVort[IX(i,j)] * (float)vLoc);
+            u[IX(i,j)] += eps *(uVort[IX(i,j)] * (float)uLoc);
+            v[IX(i,j)] += eps *(vVort[IX(i,j)] * (float)vLoc);
     END_FOR
 }
 
@@ -135,15 +129,17 @@ void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff,
 	SWAP ( x0, x ); advect ( N, 0, x, x0, u, v, dt );
 }
 
-void vel_step ( int N, float * u, float * v, float * u0, float * v0, float * uAvg, float * vAvg, 
-                float * uVort, float * vVort, float visc, float dt )
+void vel_step ( int N, float * u, float * v, float * u0, float * v0, float * uVort, float * vVort,
+                float visc, float dt, float eps, bool vc )
 {
 	add_source ( N, u, u0, dt ); add_source ( N, v, v0, dt );
 	SWAP ( u0, u ); diffuse ( N, 1, u, u0, visc, dt );
 	SWAP ( v0, v ); diffuse ( N, 2, v, v0, visc, dt );
 	project ( N, u, v, u0, v0 );
     SWAP ( u0, u ); SWAP ( v0, v );
-    confine( N, 0.1, 1.0, u, v, uAvg, vAvg, uVort, vVort);
+    if (vc) {
+        confine(N, eps, u, v, uVort, vVort);
+    }
 	advect ( N, 1, u, u0, u0, v0, dt ); advect ( N, 2, v, v0, u0, v0, dt );
 	project ( N, u, v, u0, v0 );
 }
