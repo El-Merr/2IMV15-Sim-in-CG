@@ -282,11 +282,6 @@ static void free_data ( void )
 //    if ( uVort ) free ( uVort );
 //    if ( vVort ) free ( vVort );
 
-    //from demo.c this way the fluid clears between scene transitions.
-    int i, size2=(N+2)*(N+2);
-    for ( i=0 ; i<size2 ; i++ ) {
-        u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = uVort[i] = vVort[i] = 0.0f;
-    }
 
 }
 
