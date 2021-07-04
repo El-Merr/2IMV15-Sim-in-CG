@@ -129,7 +129,7 @@ static void init_system()
             rigidObjects.push_back( rigid1 );
             break;
         } //end case 0
-        case 1: { //cloth in fluid
+        case 2: { //cloth in fluid
             int width = 5;
             int height = 5;
             float dist2 = 0.1;
@@ -170,7 +170,7 @@ static void init_system()
             constraintSolver = new ConstraintSolver(pVector, constraints);
             break;
         }
-        case 2: {
+        case 1: {
             float dist2 = 0.1;
             pVector.push_back(new Particle((center + Vec2f(-dist2, 0.0)), defaultMass));
             pVector.push_back(new Particle((center + Vec2f(dist2, 0.0)), defaultMass));
@@ -266,7 +266,7 @@ static void free_data ( void )
         u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = 0.0f;
     }
     // This crashes the program every time
-    // if ( u ) free ( u );
+//    if ( u ) free ( u );
 //    if ( v ) free ( v );
 //    if ( u_prev ) free ( u_prev );
 //    if ( v_prev ) free ( v_prev );
@@ -475,8 +475,8 @@ void apply_two_way_coupling () {
             int particleCoords = IX((int)((rigidObjects[i]->position[0] + p->m_Position[0]) * N),
                                     (int)((rigidObjects[i]->position[1] + p->m_Position[1]) * N));
             // object to fluid coupling
-            u[particleCoords] += rigidObjects[i]->velocity[0] * 10;
-            v[particleCoords] += rigidObjects[i]->velocity[1] * 10;
+            u[particleCoords] += rigidObjects[i]->velocity[0] * 5;
+            v[particleCoords] += rigidObjects[i]->velocity[1] * 5;
             // fluid to object coupling
             p->m_Force[0] += u_temp[particleCoords] * dens[particleCoords];
             p->m_Force[1] += v_temp[particleCoords] * dens[particleCoords];
@@ -866,7 +866,7 @@ static void idle_func ( void )
         handle_mouse();
 
         //propelling force
-        if(sceneNr == 2)  { u[IX(xGridPos, 2+yGridPos)] = force; } // positive x direction
+        if(sceneNr == 1)  { u[IX(xGridPos, 2+yGridPos)] = force; } // positive x direction
 
         get_from_UI ( dens_prev, u_prev, v_prev );
         vel_step ( N, u, v, u_prev, v_prev, visc, dt );
